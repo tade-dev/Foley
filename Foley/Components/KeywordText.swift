@@ -21,7 +21,8 @@ struct KeywordText: View {
             .font(font)
             .foregroundStyle(color)
             .lineSpacing(6)
-            .animation(Motion.spring, value: gapped)
+            .contentTransition(.opacity)
+            .animation(.easeOut(duration: 0.3), value: gapped)
     }
 
     private var attributed: AttributedString { build() }
