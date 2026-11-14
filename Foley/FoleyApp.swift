@@ -3,33 +3,39 @@ import SwiftUI
 
 @main
 struct FoleyApp: App {
-    let container: ModelContainer = {
+    private let container: ModelContainer
+    @State private var environment: AppEnvironment
+
+    init() {
+        let container: ModelContainer
         do {
-            return try ModelContainer(for: SoundScene.self, Pad.self, Mix.self)
+            container = try ModelContainer(for: SoundScene.self, Pad.self, Mix.self)
         } catch {
             fatalError("Could not create the model container: \(error)")
         }
-    }()
+        self.container = container
+        _environment = State(initialValue: AppEnvironment(context: container.mainContext))
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            root
+                .environment(environment)
+                .environment(environment.store)
+                .environment(environment.engine)
+        }
+        .modelContainer(container)
+    }
 
     @ViewBuilder private var root: some View {
         #if DEBUG
         if CommandLine.arguments.contains(where: { $0.hasPrefix("-gallery") }) {
             DebugGallery()
         } else {
-            Text("Foley")
+            RootView()
         }
         #else
-        Text("Foley")
+        RootView()
         #endif
-    }
-
-    var body: some Scene {
-        WindowGroup {
-            root
-                .task {
-                    _ = try? DemoSeeder.seedIfNeeded(context: container.mainContext)
-                }
-        }
-        .modelContainer(container)
     }
 }
