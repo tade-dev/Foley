@@ -13,7 +13,7 @@ struct FoleyApp: App {
 
     @ViewBuilder private var root: some View {
         #if DEBUG
-        if CommandLine.arguments.contains("-gallery") {
+        if CommandLine.arguments.contains(where: { $0.hasPrefix("-gallery") }) {
             DebugGallery()
         } else {
             Text("Foley")
