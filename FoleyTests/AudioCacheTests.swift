@@ -14,3 +14,14 @@ import Foundation
         c.remove(key); #expect(!c.contains(key))
     }
 }
+
+extension AudioCacheTests {
+    @Test func extensionFollowsTheBytesNotTheSource() throws {
+        let c = try Self.temp()
+        let m4a = try Data(contentsOf: #require(Bundle.main.url(forResource: "thunder-crack", withExtension: "m4a")))
+        let mp3Header = Data([0x49, 0x44, 0x33, 0x04, 0x00]) + Data(repeating: 0, count: 64)
+        #expect(try c.store(m4a, key: "k1").pathExtension == "m4a")
+        #expect(try c.store(mp3Header, key: "k2").pathExtension == "mp3")
+        #expect(c.contains("k1") && c.url(for: "k1").pathExtension == "m4a")
+    }
+}
