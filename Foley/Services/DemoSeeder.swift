@@ -3,7 +3,7 @@ import SwiftData
 
 /// Inserts the bundled demo scenes on first launch.
 enum DemoSeeder {
-    static let fileName = "demo-scenes"
+    nonisolated static let fileName = "demo-scenes"
 
     /// Returns the number of scenes inserted (0 when demo scenes already exist).
     @MainActor
@@ -29,7 +29,7 @@ enum DemoSeeder {
         return file.scenes.count
     }
 
-    static func load(from bundle: Bundle = .main) throws -> DemoSceneFile {
+    nonisolated static func load(from bundle: Bundle = .main) throws -> DemoSceneFile {
         guard let url = bundle.url(forResource: fileName, withExtension: "json")
                 ?? bundle.url(forResource: fileName, withExtension: "json", subdirectory: "Demo") else {
             throw CocoaError(.fileNoSuchFile)
@@ -38,7 +38,7 @@ enum DemoSeeder {
     }
 
     /// Where a bundled demo sound lives. Tries the bundle root, then the Demo folder.
-    static func audioURL(file: String, bundle: Bundle = .main) -> URL? {
+    nonisolated static func audioURL(file: String, bundle: Bundle = .main) -> URL? {
         guard !file.isEmpty else { return nil }
         return bundle.url(forResource: file, withExtension: "m4a")
             ?? bundle.url(forResource: file, withExtension: "m4a", subdirectory: "Demo")
