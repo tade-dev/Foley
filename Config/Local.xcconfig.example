@@ -1,0 +1,4 @@
+// Copy this file to Config/Local.xcconfig (gitignored) and fill in your Worker URL
+// after deploying proxy/ (see README "Generate your own scenes").
+// Leave it empty to run in demo-only mode: the bundled scenes still play.
+FOLEY_PROXY_URL =
