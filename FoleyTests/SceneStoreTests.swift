@@ -70,6 +70,25 @@ import SwiftData
         try await Task.sleep(for: .milliseconds(20)); t.cancel(); await t.value
         #expect(scene.pads.allSatisfy { store.status(of: $0) != .generating && store.status(of: $0) != .queued })
     }
+    @Test func demoSceneOneShotsFinishAfterPlayAll() async throws {
+        let container = try ModelContainer(for: SoundScene.self, Pad.self, Mix.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        defer { withExtendedLifetime(container) {} }
+        _ = try DemoSeeder.seedIfNeeded(context: container.mainContext)
+        let cache = try AudioCacheTests.temp()
+        let engine = AudioEngine()
+        let store = SceneStore(context: container.mainContext, engine: engine, cache: cache,
+                               generation: MockGenerationService(cache: cache, latency: .zero), proxy: ProxyConfig(string: ""))
+        let scene = try #require(try container.mainContext.fetch(FetchDescriptor<SoundScene>()).first { $0.title == "Pirate ship in a storm" })
+        await store.prepare(scene)
+        store.playAll(scene)
+        #expect(store.playingCount(in: scene) == 6)
+        try await Task.sleep(for: .seconds(4.6))
+        let oneShots = scene.pads.filter { $0.kind == .oneShot }
+        #expect(oneShots.count == 2)
+        #expect(oneShots.allSatisfy { store.status(of: $0) == .ready }, "one-shots still playing: \(oneShots.map { store.status(of: $0) })")
+        store.stopAll()
+    }
     @Test func saveMixRejectsShortRecordings() throws {
         let (store, _, scene, container) = try make(); defer { withExtendedLifetime(container) {} }
         let rec = MixRecording(url: URL(fileURLWithPath: "/dev/null"), duration: 0.2, envelope: [:], padOrder: [])

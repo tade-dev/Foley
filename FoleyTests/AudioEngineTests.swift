@@ -18,6 +18,26 @@ import Foundation
         e.toggle(id); e.stopAll(); #expect(e.playing.isEmpty)
         e.toggle(id); e.handleInterruption(); #expect(e.playing.isEmpty); #expect(e.levels.values.allSatisfy { $0 == 0 })
     }
+    @Test func oneShotStopsShowingAsPlayingWhenItEnds() async throws {
+        let e = AudioEngine(); let id = UUID()
+        try e.load(padID: id, kind: .oneShot, url: try #require(Bundle.main.url(forResource: "grumpy-cat", withExtension: "m4a")))
+        e.toggle(id); #expect(e.isPlaying(id))
+        try await Task.sleep(for: .seconds(2.8))
+        #expect(!e.isPlaying(id))
+    }
+    @Test func playAllReleasesOneShotsAmongLoops() async throws {
+        let e = AudioEngine()
+        var ids: [UUID] = []
+        for (file, kind) in [("creaking-hull", PadKind.loop), ("thunder-crack", .oneShot), ("heavy-rain", .loop), ("grumpy-cat", .oneShot)] {
+            let id = UUID(); ids.append(id)
+            try e.load(padID: id, kind: kind, url: try #require(Bundle.main.url(forResource: file, withExtension: "m4a")))
+        }
+        e.playAll(ids)
+        #expect(e.playing.count == 4)
+        try await Task.sleep(for: .seconds(4.6))
+        #expect(e.isPlaying(ids[0]) && e.isPlaying(ids[2]))
+        #expect(!e.isPlaying(ids[1]) && !e.isPlaying(ids[3]))
+    }
     @Test func panIsClamped() throws {
         let (e, id) = try engine()
         e.setVolume(0.5, pan: 4, for: id)

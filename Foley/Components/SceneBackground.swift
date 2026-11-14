@@ -10,7 +10,7 @@ struct SceneBackground: View {
         let total = active.reduce(0) { $0 + $1.level }
         guard total > 0 else { return color }
         for (tint, level) in active where level > 0 {
-            color = color.mix(with: tint.base, by: 0.35 * level / max(total, 1) )
+            color = color.mix(with: tint.base, by: 0.22 * min(level * 1.5, 1) / max(Double(active.count), 1))
         }
         return color
     }

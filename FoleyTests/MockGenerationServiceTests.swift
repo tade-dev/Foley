@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import AVFoundation
 @testable import Foley
 
 @Suite struct MockGenerationServiceTests {
@@ -12,6 +13,17 @@ import Foundation
     @Test func blankPromptIsInvalid() async throws {
         let svc = MockGenerationService(cache: try AudioCacheTests.temp(), latency: .zero)
         await #expect(throws: GenerationError.invalidResponse) { try await svc.buildScene(prompt: "   ") }
+    }
+    @Test func oneShotSpecsGetShortFilesAndLoopsGetLongOnes() async throws {
+        let svc = MockGenerationService(cache: try AudioCacheTests.temp(), latency: .zero)
+        for i in 0..<8 {
+            let shot = try await svc.generateSound(SoundSpec(prompt: "bang \(i)", duration: 3, loop: false))
+            let loop = try await svc.generateSound(SoundSpec(prompt: "bed \(i)", duration: 12, loop: true))
+            let shotSeconds = try AVAudioFile(forReading: shot).length / 44100
+            let loopSeconds = try AVAudioFile(forReading: loop).length / 44100
+            #expect(shotSeconds <= 5, "one-shot spec got a \(shotSeconds)s file")
+            #expect(loopSeconds >= 8, "loop spec got a \(loopSeconds)s file")
+        }
     }
     @Test func generateSoundCachesAndFailsEveryN() async throws {
         let cache = try AudioCacheTests.temp()

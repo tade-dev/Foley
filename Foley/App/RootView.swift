@@ -52,7 +52,8 @@ struct RootView: View {
     private func openDebugRoute() {
         #if DEBUG
         guard let i = CommandLine.arguments.firstIndex(of: "-route"), i + 1 < CommandLine.arguments.count else { return }
-        let scenes = (try? context.fetch(FetchDescriptor<SoundScene>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))) ?? []
+        let all = (try? context.fetch(FetchDescriptor<SoundScene>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))) ?? []
+        let scenes = all.filter(\.isDemo) + all.filter { !$0.isDemo }
         switch CommandLine.arguments[i + 1] {
         case "library": router.push(.library)
         case "create": router.push(.create(initialText: scenes.first?.sourcePrompt ?? "Campfire at night, crickets and an owl"))

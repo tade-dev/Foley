@@ -60,7 +60,9 @@ nonisolated final class MockGenerationService: GenerationService {
         let n = calls.next()
         if failEvery > 0, n % failEvery == 0 { throw GenerationError.server(500) }
 
-        let files = (try? DemoSeeder.load(from: bundle).scenes.flatMap(\.sounds).map(\.file)) ?? []
+        let sounds = (try? DemoSeeder.load(from: bundle).scenes.flatMap(\.sounds)) ?? []
+        // Match the spec's kind so a 3-second one-shot never comes back as a 15-second bed.
+        let files = sounds.filter { ($0.kind == .loop) == spec.loop }.map(\.file)
         guard !files.isEmpty else { throw GenerationError.invalidResponse }
         let pick = files[abs(spec.cacheKey.hashValue) % files.count]
         guard let source = DemoSeeder.audioURL(file: pick, bundle: bundle) else { throw GenerationError.invalidResponse }
