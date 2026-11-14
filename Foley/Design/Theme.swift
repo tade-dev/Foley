@@ -2,7 +2,7 @@ import SwiftUI
 
 // Foley design tokens. Mirrors docs/handoff/tokens.json — no hex values in views.
 
-extension Color {
+nonisolated extension Color {
     init(hex: UInt32, opacity: Double = 1) {
         self.init(.sRGB,
                   red: Double((hex >> 16) & 0xFF) / 255,
@@ -89,7 +89,7 @@ enum Theme {
 }
 
 /// The six sound tints. The LLM must pick from these, never free hex.
-enum Tint: String, Codable, CaseIterable, Sendable {
+nonisolated enum Tint: String, Codable, CaseIterable, Sendable {
     case amber, blue, teal, lavender, sky, pink
 
     var hexHighlight: UInt32 {
