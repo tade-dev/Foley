@@ -11,9 +11,21 @@ struct FoleyApp: App {
         }
     }()
 
+    @ViewBuilder private var root: some View {
+        #if DEBUG
+        if CommandLine.arguments.contains("-gallery") {
+            DebugGallery()
+        } else {
+            Text("Foley")
+        }
+        #else
+        Text("Foley")
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
-            Text("Foley")
+            root
                 .task {
                     _ = try? DemoSeeder.seedIfNeeded(context: container.mainContext)
                 }

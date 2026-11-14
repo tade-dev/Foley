@@ -5,6 +5,6 @@ LOG=$(mktemp)
 xcodebuild build -project Foley.xcodeproj -scheme Foley \
   -destination "platform=iOS Simulator,name=${SIM:-iPhone 17}" -quiet >"$LOG" 2>&1
 STATUS=$?
-if [ $STATUS -ne 0 ]; then grep -E "error:|warning: unre|\*\* BUILD" "$LOG" | head -60; tail -20 "$LOG"; fi
+if [ $STATUS -ne 0 ]; then grep -E "^/.*error:|error: (the compiler|Multiple)|\*\* BUILD" "$LOG" | grep -v "swift-frontend" | sort -u | head -40; fi
 rm -f "$LOG"
 exit $STATUS
