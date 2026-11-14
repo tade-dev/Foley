@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>Foley — Playing</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0C}
+a{color:#F4F4F5}a:hover{color:#FFFFFF}
+@keyframes idle{0%,100%{transform:scale(.97)}50%{transform:scale(1.02)}}
+@keyframes throb{0%,100%{transform:scale(1)}40%{transform:scale(1.12)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes eq{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes rec{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: radial-gradient(120% 60% at 50% 0%, #1B2A4D 0%, #0B0F1A 62%); color: #F4F4F5; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 14px; padding: 62px 20px 28px; overflow: hidden">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #243150; background: rgba(20,28,48,0.8); color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+    <span style="height: 32px; padding: 0 12px; border-radius: 16px; background: rgba(255,90,95,0.14); border: 1px solid rgba(255,90,95,0.5); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #FF5A5F; animation: rec 1s ease-in-out infinite"></span>REC 0:12</span>
+    <button aria-label="More options" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #243150; background: rgba(20,28,48,0.8); color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg>
+    </button>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 30px; line-height: 1.05; letter-spacing: -0.03em">Pirate ship in a storm</h1>
+    <span style="font-size: 14px; color: #A9B4CC">3 of 6 playing · tap to toggle</span>
+  </div>
+
+  <div aria-hidden="true" style="height: 44px; display: flex; align-items: center; gap: 3px">
+    
+      <span style="flex-grow: 1; height: 10px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.00s"></span>
+    
+      <span style="flex-grow: 1; height: 25px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.08s"></span>
+    
+      <span style="flex-grow: 1; height: 34px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.16s"></span>
+    
+      <span style="flex-grow: 1; height: 34px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.24s"></span>
+    
+      <span style="flex-grow: 1; height: 26px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.32s"></span>
+    
+      <span style="flex-grow: 1; height: 16px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.40s"></span>
+    
+      <span style="flex-grow: 1; height: 11px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.48s"></span>
+    
+      <span style="flex-grow: 1; height: 12px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.00s"></span>
+    
+      <span style="flex-grow: 1; height: 13px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.08s"></span>
+    
+      <span style="flex-grow: 1; height: 19px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.16s"></span>
+    
+      <span style="flex-grow: 1; height: 21px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.24s"></span>
+    
+      <span style="flex-grow: 1; height: 15px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.32s"></span>
+    
+      <span style="flex-grow: 1; height: 18px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.40s"></span>
+    
+      <span style="flex-grow: 1; height: 31px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.48s"></span>
+    
+      <span style="flex-grow: 1; height: 39px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.00s"></span>
+    
+      <span style="flex-grow: 1; height: 38px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.08s"></span>
+    
+      <span style="flex-grow: 1; height: 27px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.16s"></span>
+    
+      <span style="flex-grow: 1; height: 12px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.24s"></span>
+    
+      <span style="flex-grow: 1; height: 21px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.32s"></span>
+    
+      <span style="flex-grow: 1; height: 27px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.40s"></span>
+    
+      <span style="flex-grow: 1; height: 25px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.48s"></span>
+    
+      <span style="flex-grow: 1; height: 18px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.00s"></span>
+    
+      <span style="flex-grow: 1; height: 11px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.08s"></span>
+    
+      <span style="flex-grow: 1; height: 10px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.16s"></span>
+    
+      <span style="flex-grow: 1; height: 16px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.24s"></span>
+    
+      <span style="flex-grow: 1; height: 24px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.32s"></span>
+    
+      <span style="flex-grow: 1; height: 30px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.40s"></span>
+    
+      <span style="flex-grow: 1; height: 29px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.48s"></span>
+    
+      <span style="flex-grow: 1; height: 18px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.00s"></span>
+    
+      <span style="flex-grow: 1; height: 17px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.08s"></span>
+    
+      <span style="flex-grow: 1; height: 31px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.16s"></span>
+    
+      <span style="flex-grow: 1; height: 38px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.24s"></span>
+    
+      <span style="flex-grow: 1; height: 36px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.32s"></span>
+    
+      <span style="flex-grow: 1; height: 25px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.40s"></span>
+    
+      <span style="flex-grow: 1; height: 13px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.48s"></span>
+    
+      <span style="flex-grow: 1; height: 16px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 0.60s ease-in-out infinite 0.00s"></span>
+    
+      <span style="flex-grow: 1; height: 17px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 0.75s ease-in-out infinite 0.08s"></span>
+    
+      <span style="flex-grow: 1; height: 13px; border-radius: 2px; background: #5EE0CF; transform-origin: center; animation: eq 0.90s ease-in-out infinite 0.16s"></span>
+    
+      <span style="flex-grow: 1; height: 13px; border-radius: 2px; background: #C2AEFF; transform-origin: center; animation: eq 1.05s ease-in-out infinite 0.24s"></span>
+    
+      <span style="flex-grow: 1; height: 15px; border-radius: 2px; background: #FFB547; transform-origin: center; animation: eq 1.20s ease-in-out infinite 0.32s"></span>
+    
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+    
+      
+        <button onClick="" aria-pressed="true" style="height: 150px; border-radius: 28px; background: #16213A; border: 1.5px solid #FFB547; box-shadow: 0 0 36px rgba(255,181,71,0.28), inset 0 0 24px rgba(255,181,71,0.28); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+          <span style="position: absolute; right: -10px; top: -10px; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #FFD9A0 0%, #FFB547 38%, #8A4E10 78%); box-shadow: 0 0 40px #FFB547; animation: throb 1.8s ease-in-out infinite"></span>
+          <span style="position: absolute; right: -22px; top: -22px; width: 122px; height: 122px; border-radius: 50%; border: 1.5px dashed #FFB547; animation: spin 8s linear infinite"></span>
+          <span style="height: 28px; display: flex; align-items: flex-end; gap: 3px; position: relative">
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .7s ease-in-out infinite"></span>
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .9s ease-in-out infinite .2s"></span>
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .6s ease-in-out infinite .1s"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Creaking hull</span><span style="font-size: 12px; color: #DCE3F0">Looping</span></span>
+        </button>
+      
+      
+    
+      
+      
+        <button onClick="" aria-pressed="false" style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+          <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #DCE8FF 0%, #8FB8FF 36%, #2A4AA8 76%); opacity: 0.45; animation: idle 6s ease-in-out infinite"></span>
+          <span style="height: 28px"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Thunder crack</span><span style="font-size: 12px; color: #A9B4CC">One-shot · 4s</span></span>
+        </button>
+      
+    
+      
+        <button onClick="" aria-pressed="true" style="height: 150px; border-radius: 28px; background: #16213A; border: 1.5px solid #5EE0CF; box-shadow: 0 0 36px rgba(94,224,207,0.26), inset 0 0 24px rgba(94,224,207,0.26); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+          <span style="position: absolute; right: -10px; top: -10px; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #C8FAF2 0%, #5EE0CF 38%, #1E7A6E 78%); box-shadow: 0 0 40px #5EE0CF; animation: throb 0.9s ease-in-out infinite"></span>
+          <span style="position: absolute; right: -22px; top: -22px; width: 122px; height: 122px; border-radius: 50%; border: 1.5px dashed #5EE0CF; animation: spin 8s linear infinite"></span>
+          <span style="height: 28px; display: flex; align-items: flex-end; gap: 3px; position: relative">
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .7s ease-in-out infinite"></span>
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .9s ease-in-out infinite .2s"></span>
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .6s ease-in-out infinite .1s"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Heavy rain</span><span style="font-size: 12px; color: #DCE3F0">Looping</span></span>
+        </button>
+      
+      
+    
+      
+        <button onClick="" aria-pressed="true" style="height: 150px; border-radius: 28px; background: #16213A; border: 1.5px solid #C2AEFF; box-shadow: 0 0 36px rgba(194,174,255,0.28), inset 0 0 24px rgba(194,174,255,0.28); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+          <span style="position: absolute; right: -10px; top: -10px; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #ECE5FF 0%, #C2AEFF 38%, #5A3FB8 78%); box-shadow: 0 0 40px #C2AEFF; animation: throb 2.4s ease-in-out infinite"></span>
+          <span style="position: absolute; right: -22px; top: -22px; width: 122px; height: 122px; border-radius: 50%; border: 1.5px dashed #C2AEFF; animation: spin 8s linear infinite"></span>
+          <span style="height: 28px; display: flex; align-items: flex-end; gap: 3px; position: relative">
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .7s ease-in-out infinite"></span>
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .9s ease-in-out infinite .2s"></span>
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: #F4F4F5; transform-origin: bottom; animation: eq .6s ease-in-out infinite .1s"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Howling wind</span><span style="font-size: 12px; color: #DCE3F0">Looping</span></span>
+        </button>
+      
+      
+    
+      
+      
+        <button onClick="" aria-pressed="false" style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+          <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #D6F2FF 0%, #7FD6FF 36%, #1F6D96 76%); opacity: 0.45; animation: idle 6s ease-in-out infinite"></span>
+          <span style="height: 28px"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Waves on hull</span><span style="font-size: 12px; color: #A9B4CC">Loop · 15s</span></span>
+        </button>
+      
+    
+      
+      
+        <button onClick="" aria-pressed="false" style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+          <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #FFE0EA 0%, #FFA3C0 36%, #A8385E 76%); opacity: 0.45; animation: idle 6s ease-in-out infinite"></span>
+          <span style="height: 28px"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Grumpy cat</span><span style="font-size: 12px; color: #A9B4CC">One-shot · 2s</span></span>
+        </button>
+      
+    
+  </div>
+
+  <div style="flex-grow: 1"></div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border-radius: 40px; background: rgba(14,20,34,0.9); border: 1px solid #22304D">
+    <div style="display: flex; padding: 4px; border-radius: 22px; background: #0B0F1A">
+      <button aria-label="Grid view" style="width: 44px; height: 36px; border-radius: 18px; border: 0; background: #22304D; color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"></rect><rect x="14" y="4" width="6" height="6" rx="1.5"></rect><rect x="4" y="14" width="6" height="6" rx="1.5"></rect><rect x="14" y="14" width="6" height="6" rx="1.5"></rect></svg></button>
+      <a href="Mixer.html" aria-label="Orbit mixer" style="width: 44px; height: 36px; border-radius: 18px; color: #A9B4CC; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="2.5"></circle><circle cx="12" cy="12" r="9"></circle></svg></a>
+    </div>
+    <button onClick="" aria-label="Stop all" style="width: 64px; height: 64px; border-radius: 32px; border: 0; background: #F4F4F5; color: #0A0A0C; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.5"></rect></svg></button>
+    <a href="Export.html" style="width: 92px; height: 44px; box-sizing: border-box; border-radius: 22px; border: 1px solid rgba(255,90,95,0.6); background: rgba(255,90,95,0.12); color: #F4F4F5; font: 600 14px Inter, sans-serif; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 2px; background: #FF5A5F"></span>Done</a>
+  </div>
+</div>
+</body>
+</html>

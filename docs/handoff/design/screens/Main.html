@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>Foley — Describe a scene</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0C}
+a{color:#F4F4F5}a:hover{color:#FFFFFF}
+@keyframes breathe{0%,100%{transform:scale(.94)}50%{transform:scale(1.05)}}
+@keyframes drift{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+textarea::placeholder{color:#8B8B94}
+</style>
+
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0A0A0C; color: #F4F4F5; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 62px 20px 28px; overflow: hidden">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.03em">foley</span>
+    <button aria-label="Your scenes" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #26262D; background: #141418; color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect><rect x="14" y="14" width="7" height="7" rx="2"></rect></svg>
+    </button>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center">
+    <div style="position: relative; width: 190px; height: 190px; display: flex; align-items: center; justify-content: center">
+      <div style="position: absolute; inset: 0; border-radius: 50%; border: 1px dashed #2A2A32; animation: drift 40s linear infinite"></div>
+      <div style="position: absolute; inset: 22px; border-radius: 50%; border: 1px solid #1E1E24"></div>
+      <div style="width: 112px; height: 112px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #5A5A66 0%, #26262E 48%, #121216 78%); box-shadow: 0 0 60px rgba(160,160,190,0.18), inset 0 -10px 30px rgba(0,0,0,0.6); animation: breathe 5s ease-in-out infinite"></div>
+    </div>
+    <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 34px; line-height: 1.05; letter-spacing: -0.03em">Describe a scene.</h1>
+    <p style="margin: 0; max-width: 280px; font-size: 15px; line-height: 1.45; color: #A1A1AA">Foley turns it into sounds you can tap, layer and loop.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px">
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8B8B94">Try one</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <button style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #26262D; background: #141418; color: #E4E4E7; font: 500 14px Inter, sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 4px; background: #5EE0CF"></span>Rainy café in Tokyo</button>
+      <button style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #26262D; background: #141418; color: #E4E4E7; font: 500 14px Inter, sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 4px; background: #C2AEFF"></span>Haunted house</button>
+      <button style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #26262D; background: #141418; color: #E4E4E7; font: 500 14px Inter, sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 4px; background: #8FB8FF"></span>Pirate ship in a storm</button>
+      <button style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #26262D; background: #141418; color: #E4E4E7; font: 500 14px Inter, sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 4px; background: #FFB547"></span>Campfire at night</button>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <label for="scene" style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8B8B94">Your scene</label>
+    <div style="display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 16px; border-radius: 26px; background: #141418; border: 1px solid #26262D">
+      <textarea id="scene" rows="2" placeholder="A pirate ship in a thunderstorm…" style="flex-grow: 1; resize: none; border: 0; outline: none; background: transparent; color: #F4F4F5; font: 400 16px/1.4 Inter, sans-serif; padding: 6px 0"></textarea>
+      <button aria-label="Dictate" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1F1F25; color: #E4E4E7; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+      </button>
+      <button aria-label="Build scene" disabled style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #26262D; color: #6B6B74; display: flex; align-items: center; justify-content: center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+      </button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

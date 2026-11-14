@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>Foley — Sounds detected</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0C}
+a{color:#F4F4F5}a:hover{color:#FFFFFF}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+</style>
+
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0A0A0C; color: #F4F4F5; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px; padding: 62px 20px 28px; overflow: hidden">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #26262D; background: #141418; color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+    <span style="font-size: 13px; font-weight: 500; color: #A1A1AA; display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #5EE0CF; box-shadow: 0 0 10px #5EE0CF"></span>Listening for sounds</span>
+    <span style="width: 44px"></span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8B8B94">Your scene</span>
+    <div style="padding: 20px; border-radius: 28px; background: #141418; border: 1px solid #2E2E36; font-family: 'Space Grotesk', sans-serif; font-weight: 500; font-size: 26px; line-height: 1.35; letter-spacing: -0.02em">
+      A <span style="background: rgba(255,181,71,0.16); box-shadow: inset 0 -2px 0 #FFB547; border-radius: 6px; padding: 0 4px">creaky pirate ship</span> in a <span style="background: rgba(143,184,255,0.16); box-shadow: inset 0 -2px 0 #8FB8FF; border-radius: 6px; padding: 0 4px">thunderstorm</span>, <span style="background: rgba(94,224,207,0.16); box-shadow: inset 0 -2px 0 #5EE0CF; border-radius: 6px; padding: 0 4px">heavy rain</span>, <span style="background: rgba(194,174,255,0.16); box-shadow: inset 0 -2px 0 #C2AEFF; border-radius: 6px; padding: 0 4px">howling wind</span>, <span style="background: rgba(127,214,255,0.16); box-shadow: inset 0 -2px 0 #7FD6FF; border-radius: 6px; padding: 0 4px">waves</span> smashing the hull and a <span style="background: rgba(255,163,192,0.16); box-shadow: inset 0 -2px 0 #FFA3C0; border-radius: 6px; padding: 0 4px">grumpy cat</span> below deck<span style="display: inline-block; width: 2px; height: 28px; margin-left: 2px; vertical-align: -5px; background: #F4F4F5; animation: blink 1s step-end infinite"></span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: baseline; justify-content: space-between">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8B8B94">6 sounds detected</span>
+      <span style="font-size: 13px; color: #A1A1AA">Max 8</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <span style="height: 34px; padding: 0 12px; border-radius: 17px; background: #17171C; border: 1px solid #2A2A32; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #FFB547"></span>Creaking hull</span>
+      <span style="height: 34px; padding: 0 12px; border-radius: 17px; background: #17171C; border: 1px solid #2A2A32; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #8FB8FF"></span>Thunder crack</span>
+      <span style="height: 34px; padding: 0 12px; border-radius: 17px; background: #17171C; border: 1px solid #2A2A32; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #5EE0CF"></span>Heavy rain</span>
+      <span style="height: 34px; padding: 0 12px; border-radius: 17px; background: #17171C; border: 1px solid #2A2A32; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #C2AEFF"></span>Howling wind</span>
+      <span style="height: 34px; padding: 0 12px; border-radius: 17px; background: #17171C; border: 1px solid #2A2A32; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #7FD6FF"></span>Waves on hull</span>
+      <span style="height: 34px; padding: 0 12px; border-radius: 17px; background: #17171C; border: 1px solid #FFA3C0; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; animation: pop .5s ease-out"><span style="width: 10px; height: 10px; border-radius: 5px; background: #FFA3C0"></span>Grumpy cat</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #111115; border: 1px solid #22222A">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; border-bottom: 1px solid #22222A">
+      <span style="font-size: 15px">Ambient sounds loop</span>
+      <span style="width: 51px; height: 31px; border-radius: 16px; background: #F4F4F5; position: relative"><span style="position: absolute; right: 2px; top: 2px; width: 27px; height: 27px; border-radius: 14px; background: #0A0A0C"></span></span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px">
+      <span style="font-size: 15px">Clip length</span>
+      <span style="font-size: 15px; color: #A1A1AA; display: flex; align-items: center; gap: 6px">Auto<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+
+  <button style="height: 58px; border-radius: 29px; border: 0; background: #F4F4F5; color: #0A0A0C; font: 600 17px Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"></path></svg>
+    Build scene
+  </button>
+</div>
+</body>
+</html>

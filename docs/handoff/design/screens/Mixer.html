@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>Foley — Orbit mixer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0C}
+a{color:#F4F4F5}a:hover{color:#FFFFFF}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes throb{0%,100%{transform:scale(1)}45%{transform:scale(1.08)}}
+@keyframes ping{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+input[type=range]{accent-color:#F4F4F5}
+</style>
+
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: radial-gradient(90% 50% at 50% 38%, #1B2A4D 0%, #0B0F1A 70%); color: #F4F4F5; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 14px; padding: 62px 20px 28px; overflow: hidden">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #243150; background: rgba(20,28,48,0.8); color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+    <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.02em">Mixer</span>
+    <button aria-label="Reset positions" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #243150; background: rgba(20,28,48,0.8); color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+    </button>
+  </div>
+
+  <div style="position: relative; width: 350px; height: 350px; margin-top: 8px">
+    <div style="position: absolute; left: 10px; top: 10px; width: 330px; height: 330px; box-sizing: border-box; border-radius: 50%; border: 1px dashed #2A3654; animation: spin 90s linear infinite"></div>
+    <div style="position: absolute; left: 65px; top: 65px; width: 220px; height: 220px; box-sizing: border-box; border-radius: 50%; border: 1px solid #22304D"></div>
+    <div style="position: absolute; left: 115px; top: 115px; width: 120px; height: 120px; box-sizing: border-box; border-radius: 50%; border: 1px solid #2A3A60; background: rgba(40,60,110,0.12)"></div>
+    <span style="position: absolute; left: 2px; top: 167px; font-size: 11px; font-weight: 600; color: #8E9AB3">L</span>
+    <span style="position: absolute; right: 2px; top: 167px; font-size: 11px; font-weight: 600; color: #8E9AB3">R</span>
+
+    <div style="position: absolute; left: 175px; top: 175px; width: 67px; height: 0; border-top: 1.5px dashed #8FB8FF; transform-origin: 0 0; transform: rotate(-42deg); opacity: 0.8"></div>
+
+    <div style="position: absolute; left: 147px; top: 147px; width: 56px; height: 56px; border-radius: 28px; background: #F4F4F5; color: #0A0A0C; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; box-shadow: 0 0 30px rgba(244,244,245,0.25)">YOU</div>
+    <div style="position: absolute; left: 147px; top: 147px; width: 56px; height: 56px; border-radius: 28px; border: 1.5px solid #F4F4F5; animation: ping 2s ease-out infinite"></div>
+
+    <div style="position: absolute; left: 45px; top: 118px; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+      <span style="width: 64px; height: 64px; border-radius: 32px; background: radial-gradient(circle at 36% 34%, #FFD9A0 0%, #FFB547 38%, #8A4E10 78%); box-shadow: 0 0 26px rgba(255,181,71,0.45); animation: throb 1.8s ease-in-out infinite"></span>
+      <span style="font-size: 12px; font-weight: 500">Creaking hull</span>
+    </div>
+    <div style="position: absolute; left: 175px; top: 90px; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+      <span style="width: 80px; height: 80px; border-radius: 40px; background: radial-gradient(circle at 36% 34%, #DCE8FF 0%, #8FB8FF 38%, #2A4AA8 78%); box-shadow: 0 0 0 4px rgba(143,184,255,0.25), 0 18px 40px rgba(20,40,110,0.8), 0 0 40px rgba(143,184,255,0.6); transform: scale(1.06)"></span>
+      <span style="font-size: 12px; font-weight: 600">Thunder crack</span>
+    </div>
+    <span style="position: absolute; left: 262px; top: 86px; height: 26px; padding: 0 10px; border-radius: 13px; background: #F4F4F5; color: #0A0A0C; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center">82% · R30</span>
+    <div style="position: absolute; left: 190px; top: 213px; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+      <span style="width: 64px; height: 64px; border-radius: 32px; background: radial-gradient(circle at 36% 34%, #C8FAF2 0%, #5EE0CF 38%, #1E7A6E 78%); box-shadow: 0 0 24px rgba(94,224,207,0.4); animation: throb 0.9s ease-in-out infinite"></span>
+      <span style="font-size: 12px; font-weight: 500">Heavy rain</span>
+    </div>
+    <div style="position: absolute; left: 20px; top: 222px; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+      <span style="width: 56px; height: 56px; border-radius: 28px; background: radial-gradient(circle at 36% 34%, #ECE5FF 0%, #C2AEFF 38%, #5A3FB8 78%); box-shadow: 0 0 20px rgba(194,174,255,0.35); animation: throb 2.4s ease-in-out infinite"></span>
+      <span style="font-size: 12px; font-weight: 500">Howling wind</span>
+    </div>
+    <div style="position: absolute; left: 100px; top: 14px; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+      <span style="width: 52px; height: 52px; border-radius: 26px; background: radial-gradient(circle at 36% 34%, #D6F2FF 0%, #7FD6FF 38%, #1F6D96 78%); opacity: 0.85"></span>
+      <span style="font-size: 12px; font-weight: 500; color: #C9D2E3">Waves</span>
+    </div>
+    <div style="position: absolute; left: 140px; top: 290px; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 4px">
+      <span style="width: 40px; height: 40px; border-radius: 20px; background: radial-gradient(circle at 36% 34%, #FFE0EA 0%, #FFA3C0 38%, #A8385E 78%); opacity: 0.7"></span>
+      <span style="font-size: 12px; font-weight: 500; color: #C9D2E3">Grumpy cat</span>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 18px; font-size: 13px; color: #A9B4CC">
+    <span style="display: flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>Closer = louder</span>
+    <span style="display: flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M8 8l-4 4 4 4M16 8l4 4-4 4"></path></svg>Sides = pan</span>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 22px; background: rgba(14,20,34,0.9); border: 1px solid #22304D">
+    <div style="display: flex; justify-content: space-between; font-size: 14px"><label for="master">Master volume</label><span style="color: #A9B4CC; font-variant-numeric: tabular-nums">74%</span></div>
+    <input id="master" type="range" min="0" max="100" value="74" style="width: 100%; height: 28px; margin: 0">
+  </div>
+
+  <div style="display: flex; padding: 4px; border-radius: 26px; background: rgba(14,20,34,0.9); border: 1px solid #22304D">
+    <a href="Playing.html" style="flex-grow: 1; height: 44px; border-radius: 22px; color: #A9B4CC; text-decoration: none; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center">Grid</a>
+    <span style="flex-grow: 1; height: 44px; border-radius: 22px; background: #F4F4F5; color: #0A0A0C; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center">Orbit</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>Foley — Board ready</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0C}
+a{color:#F4F4F5}a:hover{color:#FFFFFF}
+@keyframes idle{0%,100%{transform:scale(.97)}50%{transform:scale(1.02)}}
+</style>
+
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: radial-gradient(120% 60% at 50% 0%, #15213D 0%, #0B0F1A 60%); color: #F4F4F5; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 16px; padding: 62px 20px 28px; overflow: hidden">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #243150; background: rgba(20,28,48,0.8); color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+    <button aria-label="More options" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #243150; background: rgba(20,28,48,0.8); color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg>
+    </button>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 30px; line-height: 1.05; letter-spacing: -0.03em">Pirate ship in a storm</h1>
+    <span style="font-size: 14px; color: #A9B4CC">6 sounds · tap to play, hold to edit</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+    
+      <button style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+        <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #FFD9A0 0%, #FFB547 36%, #8A4E10 76%); opacity: 0.55; animation: idle 6s ease-in-out infinite"></span>
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4F4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"></path><path d="M4 11V9a4 4 0 0 1 4-4h12"></path><path d="M7 22l-3-3 3-3"></path><path d="M20 13v2a4 4 0 0 1-4 4H4"></path></svg>
+          
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Creaking hull</span><span style="font-size: 12px; color: #A9B4CC">Loop · 10s</span></span>
+      </button>
+    
+      <button style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+        <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #DCE8FF 0%, #8FB8FF 36%, #2A4AA8 76%); opacity: 0.55; animation: idle 6s ease-in-out infinite"></span>
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative">
+          
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4F4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Thunder crack</span><span style="font-size: 12px; color: #A9B4CC">One-shot · 4s</span></span>
+      </button>
+    
+      <button style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+        <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #C8FAF2 0%, #5EE0CF 36%, #1E7A6E 76%); opacity: 0.55; animation: idle 6s ease-in-out infinite"></span>
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4F4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"></path><path d="M4 11V9a4 4 0 0 1 4-4h12"></path><path d="M7 22l-3-3 3-3"></path><path d="M20 13v2a4 4 0 0 1-4 4H4"></path></svg>
+          
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Heavy rain</span><span style="font-size: 12px; color: #A9B4CC">Loop · 15s</span></span>
+      </button>
+    
+      <button style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+        <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #ECE5FF 0%, #C2AEFF 36%, #5A3FB8 76%); opacity: 0.55; animation: idle 6s ease-in-out infinite"></span>
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4F4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"></path><path d="M4 11V9a4 4 0 0 1 4-4h12"></path><path d="M7 22l-3-3 3-3"></path><path d="M20 13v2a4 4 0 0 1-4 4H4"></path></svg>
+          
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Howling wind</span><span style="font-size: 12px; color: #A9B4CC">Loop · 12s</span></span>
+      </button>
+    
+      <button style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+        <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #D6F2FF 0%, #7FD6FF 36%, #1F6D96 76%); opacity: 0.55; animation: idle 6s ease-in-out infinite"></span>
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4F4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"></path><path d="M4 11V9a4 4 0 0 1 4-4h12"></path><path d="M7 22l-3-3 3-3"></path><path d="M20 13v2a4 4 0 0 1-4 4H4"></path></svg>
+          
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Waves on hull</span><span style="font-size: 12px; color: #A9B4CC">Loop · 15s</span></span>
+      </button>
+    
+      <button style="height: 150px; border-radius: 28px; background: #121A2C; border: 1px solid #243150; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; position: relative; overflow: hidden; color: #F4F4F5; font-family: Inter, sans-serif; cursor: pointer">
+        <span style="position: absolute; right: -16px; top: -16px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 36% 34%, #FFE0EA 0%, #FFA3C0 36%, #A8385E 76%); opacity: 0.55; animation: idle 6s ease-in-out infinite"></span>
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; position: relative">
+          
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4F4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; position: relative"><span style="font-weight: 600; font-size: 15px">Grumpy cat</span><span style="font-size: 12px; color: #A9B4CC">One-shot · 2s</span></span>
+      </button>
+    
+  </div>
+
+  <div style="flex-grow: 1"></div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border-radius: 40px; background: rgba(14,20,34,0.9); border: 1px solid #22304D">
+    <div style="display: flex; padding: 4px; border-radius: 22px; background: #0B0F1A">
+      <button aria-label="Grid view" style="width: 44px; height: 36px; border-radius: 18px; border: 0; background: #22304D; color: #F4F4F5; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"></rect><rect x="14" y="4" width="6" height="6" rx="1.5"></rect><rect x="4" y="14" width="6" height="6" rx="1.5"></rect><rect x="14" y="14" width="6" height="6" rx="1.5"></rect></svg></button>
+      <button aria-label="Orbit mixer" style="width: 44px; height: 36px; border-radius: 18px; border: 0; background: transparent; color: #A9B4CC; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="2.5"></circle><circle cx="12" cy="12" r="9"></circle></svg></button>
+    </div>
+    <button aria-label="Play all" style="width: 64px; height: 64px; border-radius: 32px; border: 0; background: #F4F4F5; color: #0A0A0C; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"></path></svg></button>
+    <button aria-label="Record mix" style="width: 92px; height: 44px; border-radius: 22px; border: 1px solid #2E3B5C; background: transparent; color: #F4F4F5; font: 600 14px Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><span style="width: 10px; height: 10px; border-radius: 5px; background: #FF5A5F"></span>Rec</button>
+  </div>
+</div>
+</body>
+</html>
