@@ -66,6 +66,7 @@ struct BoardView: View {
             #if DEBUG
             if CommandLine.arguments.contains("-autorecord") { try? engine.startRecording() }
             if CommandLine.arguments.contains("-orbit") { mode = .orbit }
+            if CommandLine.arguments.contains("-sheet"), pads.count > 1 { editing = pads[1] }
             #endif
         }
         .sheet(item: $editing) { pad in
