@@ -20,7 +20,13 @@ final class AppEnvironment {
         let cache = (try? AudioCache.appSupport())
             ?? (try! AudioCache(directory: FileManager.default.temporaryDirectory.appending(path: "FoleyAudio")))
         let proxy = ProxyConfig.fromBundle()
-        let generation = MockGenerationService(cache: cache)
+        var failEvery = 0
+        #if DEBUG
+        if let i = CommandLine.arguments.firstIndex(of: "-failEvery"), i + 1 < CommandLine.arguments.count {
+            failEvery = Int(CommandLine.arguments[i + 1]) ?? 0
+        }
+        #endif
+        let generation = MockGenerationService(cache: cache, failEvery: failEvery)
         self.engine = engine
         self.cache = cache
         self.proxy = proxy

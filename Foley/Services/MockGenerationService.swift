@@ -35,7 +35,7 @@ nonisolated final class MockGenerationService: GenerationService {
             .split(whereSeparator: { ",;.:".contains($0) })
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)) }
             .filter { !$0.isEmpty }
-            .prefix(6)
+            .prefix(SceneResponse.maxSounds)
 
         let sounds = phrases.enumerated().map { i, phrase -> SceneResponse.Sound in
             let isLoop = Self.loopWords.contains { phrase.localizedCaseInsensitiveContains($0) }

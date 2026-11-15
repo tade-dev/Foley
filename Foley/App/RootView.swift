@@ -56,7 +56,9 @@ struct RootView: View {
         let scenes = all.filter(\.isDemo) + all.filter { !$0.isDemo }
         switch CommandLine.arguments[i + 1] {
         case "library": router.push(.library)
-        case "create": router.push(.create(initialText: scenes.first?.sourcePrompt ?? "Campfire at night, crickets and an owl"))
+        case "create":
+            let custom = CommandLine.arguments.firstIndex(of: "-prompt").flatMap { CommandLine.arguments.indices.contains($0 + 1) ? CommandLine.arguments[$0 + 1] : nil }
+            router.push(.create(initialText: custom ?? scenes.first?.sourcePrompt ?? "Campfire at night, crickets and an owl"))
         case "board": if let s = scenes.first { router.push(.board(s)) }
         case "board2": if scenes.count > 1 { router.push(.board(scenes[1])) }
         default: break
