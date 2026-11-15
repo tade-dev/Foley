@@ -64,7 +64,13 @@ struct BoardView: View {
                 store.playAll(scene)
             }
             #if DEBUG
-            if CommandLine.arguments.contains("-autorecord") { try? engine.startRecording() }
+            if CommandLine.arguments.contains("-autorecord") {
+                try? engine.startRecording()
+                if CommandLine.arguments.contains("-autostop") {
+                    try? await Task.sleep(for: .seconds(6))
+                    record()
+                }
+            }
             if CommandLine.arguments.contains("-orbit") { mode = .orbit }
             if CommandLine.arguments.contains("-sheet"), pads.count > 1 { editing = pads[1] }
             #endif
