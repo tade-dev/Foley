@@ -32,3 +32,15 @@ test('defaults durations by kind and keeps valid input intact', () => {
 test('throws invalid_scene when nothing usable', () => {
   assert.throws(() => validateScene({ title: 't', mood: 'blue', sounds: [{ name: '', prompt: '' }] }, 'x'), /invalid_scene/);
 });
+
+test('names are forced to sentence case regardless of what the model returns', () => {
+  const r = validateScene({ title: 'Pirate Ship Sounds', mood: 'blue', sounds: [
+    { name: 'Creaking Wood', keyword: 'wood', tint: 'teal', kind: 'loop', prompt: 'p', duration: 10 },
+    { name: 'GRUMPY CAT MEOW', keyword: 'cat', tint: 'pink', kind: 'oneShot', prompt: 'p', duration: 2 },
+    { name: 'thunder crash', keyword: 'thunder', tint: 'blue', kind: 'oneShot', prompt: 'p', duration: 3 },
+  ] }, 'wood, cat and thunder');
+  assert.equal(r.sounds[0].name, 'Creaking wood');
+  assert.equal(r.sounds[1].name, 'Grumpy cat meow');
+  assert.equal(r.sounds[2].name, 'Thunder crash');
+  assert.equal(r.title, 'Pirate ship sounds');
+});

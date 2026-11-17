@@ -4,7 +4,8 @@
 // Secrets: wrangler secret put OPENAI_API_KEY / ELEVENLABS_API_KEY
 import { sceneRoute } from './scene.js';
 import { soundRoute, parseSoundRequest } from './sound.js';
-import { counterKey, consume, LIMITS } from './limits.js';
+import { counterKey, LIMITS } from './limits.js';
+export { SpendCounter } from './counter.js';
 
 const STATUS = {
   bad_device: 422, bad_prompt: 422,
@@ -61,12 +62,18 @@ export default {
 
 /**
  * Counters are spent before the upstream call: a failed upstream still counts, which keeps this
- * simple and errs toward protecting the account. Fails closed — a missing or misbound namespace
- * stops traffic rather than silently removing every spending limit.
+ * simple and errs toward protecting the account. All keys or none, through a Durable Object so
+ * concurrent requests cannot lose increments. Fails closed — a missing binding stops traffic
+ * rather than silently removing every spending limit.
  */
 async function spend(env, pairs) {
-  if (!env.COUNTERS) throw new Error('quota');
-  for (const [key, limit] of pairs) {
-    if (!(await consume(env.COUNTERS, key, limit))) throw new Error('quota');
-  }
+  if (!env.SPEND) throw new Error('quota');
+  const day = new Date().toISOString().slice(0, 10);
+  const stub = env.SPEND.get(env.SPEND.idFromName(day));
+  const res = await stub.fetch('https://counter/spend', {
+    method: 'POST',
+    body: JSON.stringify(pairs.map(([key, limit]) => ({ key, limit }))),
+  });
+  if (res.status === 429) throw new Error('quota');
+  if (!res.ok) throw new Error('proxy_error');
 }

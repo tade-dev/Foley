@@ -7,14 +7,23 @@ nonisolated struct ProxyConfig: Sendable, Equatable {
 
     var isConfigured: Bool { baseURL != nil }
 
+    /// Accepts either a full `https://host` URL or a bare `host`.
+    ///
+    /// A bare host is the form that actually survives: `Config/Local.xcconfig` feeds this value,
+    /// and an xcconfig treats `//` as a comment, so a pasted `https://host` arrives as `https:`.
     init(string: String) {
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let url = URL(string: trimmed), let scheme = url.scheme?.lowercased(),
-           ["http", "https"].contains(scheme), url.host() != nil {
-            baseURL = url
-        } else {
+        var trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        while trimmed.hasSuffix("/") { trimmed.removeLast() }
+        guard !trimmed.isEmpty else { baseURL = nil; return }
+
+        let candidate = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+        guard let url = URL(string: candidate),
+              let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              let host = url.host(), host.contains(".") else {
             baseURL = nil
+            return
         }
+        baseURL = url
     }
 
     static func fromBundle(_ bundle: Bundle = .main) -> ProxyConfig {

@@ -5,11 +5,15 @@ compatibility_date = "2026-11-01"
 [vars]
 OPENAI_MODEL = "gpt-4o-mini"
 
-# Daily counters. Create with: npx wrangler kv namespace create COUNTERS
-# then paste the printed id below.
-[[kv_namespaces]]
-binding = "COUNTERS"
-id = "2d4d27774aa04aa8a8e4b334be8c06d3"
+# Daily spend counters. A Durable Object, not KV: KV is eventually consistent, so concurrent
+# requests lose increments and the caps come out several times looser than they read.
+[[durable_objects.bindings]]
+name = "SPEND"
+class_name = "SpendCounter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SpendCounter"]
 
 # Burst protection, 20 requests per 60s per device.
 [[unsafe.bindings]]

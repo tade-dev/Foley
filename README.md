@@ -39,16 +39,17 @@ keys as secrets and rate-limits per device.
 ```bash
 cd proxy
 npx wrangler login
-npx wrangler kv namespace create COUNTERS   # paste the id into wrangler.toml
+npx wrangler deploy                         # creates the Worker and prints its URL
 npx wrangler secret put OPENAI_API_KEY      # scene parsing
 npx wrangler secret put ELEVENLABS_API_KEY  # sound generation
-npx wrangler deploy
+npx wrangler deploy                         # redeploy so the secrets are live
 ```
 
-Put the printed URL in `Config/Local.xcconfig` (gitignored, never committed):
+Put the printed host in `Config/Local.xcconfig` (gitignored, never committed), without the
+scheme — an xcconfig treats `//` as a comment, so `https://` would be cut off:
 
 ```
-FOLEY_PROXY_URL = https://foley-proxy.<your-account>.workers.dev
+FOLEY_PROXY_URL = foley-proxy.<your-account>.workers.dev
 ```
 
 Details, limits and curl examples: [`proxy/README.md`](proxy/README.md).

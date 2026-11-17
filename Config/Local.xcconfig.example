@@ -1,4 +1,8 @@
-// Copy this file to Config/Local.xcconfig (gitignored) and fill in your Worker URL
-// after deploying proxy/ (see README "Generate your own scenes").
+// Copy this file to Config/Local.xcconfig (gitignored) and paste the host your Worker
+// deploy printed — WITHOUT the https:// prefix. An xcconfig treats a double slash as the
+// start of a comment, so "https://foley-proxy.you.workers.dev" would be cut to "https:".
+//
+//   FOLEY_PROXY_URL = foley-proxy.your-account.workers.dev
+//
 // Leave it empty to run in demo-only mode: the bundled scenes still play.
 FOLEY_PROXY_URL =
