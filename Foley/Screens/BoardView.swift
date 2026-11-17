@@ -70,7 +70,6 @@ struct BoardView: View {
                 store.playAll(scene)
             }
             #if DEBUG
-            await runDemoIfNeeded()
             if CommandLine.arguments.contains("-autorecord") {
                 try? engine.startRecording()
                 if CommandLine.arguments.contains("-autostop") {
@@ -196,43 +195,6 @@ struct BoardView: View {
             OrbitMixerView(scene: scene, mode: $mode, namespace: orbNS)
         }
     }
-
-    #if DEBUG
-    /// Scripted sequences for recording demo clips.
-    private func runDemoIfNeeded() async {
-        guard let demo = DemoDirector.name else { return }
-        switch demo {
-        case "play":
-            await DemoDirector.pause(1.4)
-            for pad in pads where store.status(of: pad) == .ready {
-                tap(pad)
-                await DemoDirector.pause(1.1)
-            }
-            await DemoDirector.pause(3)
-            for pad in pads.prefix(2) where engine.isPlaying(pad.id) {
-                tap(pad)
-                await DemoDirector.pause(0.9)
-            }
-        case "orbit":
-            store.playAll(scene)
-            await DemoDirector.pause(1.2)
-            withAnimation(Motion.seg) { mode = .orbit }
-        case "sheet":
-            store.playAll(scene)
-            await DemoDirector.pause(1.6)
-            if pads.count > 1 { editing = pads[1] }
-        case "record":
-            await DemoDirector.pause(1)
-            store.playAll(scene)
-            await DemoDirector.pause(1.4)
-            record()
-            await DemoDirector.pause(9)
-            record()
-        default:
-            break
-        }
-    }
-    #endif
 
     // MARK: Actions
 

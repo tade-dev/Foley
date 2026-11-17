@@ -9,5 +9,3 @@ docs/qa/
 proxy/node_modules/
 proxy/.wrangler/
 
-# Marketing recordings: large, local only
-docs/marketing/
