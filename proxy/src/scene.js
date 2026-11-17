@@ -44,7 +44,11 @@ export async function sceneRoute(prompt, env) {
       response_format: { type: 'json_schema', json_schema: { name: 'scene', strict: true, schema } },
     }),
   });
-  if (!res.ok) throw new Error('llm_error');
+  if (!res.ok) {
+    // The caller only ever sees "llm_error"; the reason belongs in the Worker's logs.
+    console.error('openai', res.status, (await res.text()).slice(0, 300));
+    throw new Error('llm_error');
+  }
 
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content;

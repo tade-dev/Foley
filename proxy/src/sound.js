@@ -23,6 +23,9 @@ export async function soundRoute(request, env) {
   });
 
   if (res.status === 429) throw new Error('busy');
-  if (!res.ok) throw new Error('elevenlabs_error');
+  if (!res.ok) {
+    console.error('elevenlabs', res.status, (await res.text()).slice(0, 300));
+    throw new Error('elevenlabs_error');
+  }
   return new Response(res.body, { headers: { 'content-type': 'audio/mpeg' } });
 }
