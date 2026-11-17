@@ -43,6 +43,15 @@ struct HomeView: View {
         .sensoryFeedback(.selection, trigger: typedWords)
         .onChange(of: dictation.transcript) { _, new in if dictation.isListening { text = new } }
         .onDisappear { dictation.stop() }
+        #if DEBUG
+        .task {
+            guard DemoDirector.isRunning("home") else { return }
+            await DemoDirector.pause(1.8)
+            type(suggestions[2].0)          // "Pirate ship in a storm"
+            await DemoDirector.pause(3.4)
+            submit()
+        }
+        #endif
     }
 
     private var header: some View {

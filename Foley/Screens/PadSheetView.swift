@@ -83,6 +83,20 @@ struct PadSheetView: View {
         .animation(Motion.spring, value: regenerating)
         .animation(Motion.spring, value: failed)
         .task(id: store.audioURL(for: pad)) { await loadPeaks() }
+        #if DEBUG
+        .task {
+            guard DemoDirector.isRunning("sheet") else { return }
+            await DemoDirector.pause(2.2)
+            store.toggle(pad)                      // play the current sound
+            await DemoDirector.pause(2.6)
+            if engine.isPlaying(pad.id) { store.toggle(pad) }
+            withAnimation(Motion.spring) { draft.duration = 8 }
+            await DemoDirector.pause(1.3)
+            withAnimation(Motion.spring) { draft.promptInfluence = 0.75 }
+            await DemoDirector.pause(1.6)
+            regenerate()
+        }
+        #endif
         .confirmationDialog("Delete \(pad.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("Delete", role: .destructive) { store.delete(pad); dismiss() }
             Button("Cancel", role: .cancel) {}

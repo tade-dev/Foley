@@ -48,7 +48,7 @@ struct RootView: View {
         }
     }
 
-    /// DEBUG: `-route library|create|board|board2` opens a screen directly for screenshots.
+    /// DEBUG: `-route library|create|board|board2|mix` opens a screen directly for screenshots.
     private func openDebugRoute() {
         #if DEBUG
         guard let i = CommandLine.arguments.firstIndex(of: "-route"), i + 1 < CommandLine.arguments.count else { return }
@@ -61,6 +61,11 @@ struct RootView: View {
             router.push(.create(initialText: custom ?? scenes.first?.sourcePrompt ?? "Campfire at night, crickets and an owl"))
         case "board": if let s = scenes.first { router.push(.board(s)) }
         case "board2": if scenes.count > 1 { router.push(.board(scenes[1])) }
+        case "mix":
+            let mixes = (try? context.fetch(FetchDescriptor<Mix>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))) ?? []
+            if let mix = mixes.first, let scene = mix.scene {
+                router.path = [.board(scene), .mixSaved(mix)]
+            }
         default: break
         }
         #endif

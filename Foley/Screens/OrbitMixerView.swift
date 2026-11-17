@@ -43,6 +43,9 @@ struct OrbitMixerView: View {
         }
         .sensoryFeedback(.selection, trigger: haptic)
         .onAppear { seedAngles() }
+        #if DEBUG
+        .task { await runDemoIfNeeded() }
+        #endif
     }
 
     // MARK: Orbit
@@ -158,6 +161,50 @@ struct OrbitMixerView: View {
             engine.setVolume(pad.volume, pan: pad.pan, for: pad.id)
         }
     }
+
+    #if DEBUG
+    /// Animates one node being dragged out to quiet and back in to loud, for the demo recording.
+    /// Only one node moves, so the others keep their spacing and the labels stay readable.
+    private func runDemoIfNeeded() async {
+        guard DemoDirector.isRunning("orbit"), let subject = pads.first else { return }
+        await DemoDirector.pause(1.8)
+
+        let home = angles[subject.id] ?? 0
+        dragging = subject.id
+
+        // Out: quieter and panned left, drifting only slightly off its own angle.
+        for step in stride(from: 0.0, through: 1.0, by: 0.05) {
+            let eased = step * step * (3 - 2 * step)
+            angles[subject.id] = home - 0.22 * eased
+            apply(volume: 0.8 - 0.65 * eased, pan: -0.8 * eased, to: subject)
+            await DemoDirector.pause(0.04)
+        }
+        await DemoDirector.pause(1.3)
+
+        // Back in: louder and panned right.
+        for step in stride(from: 0.0, through: 1.0, by: 0.05) {
+            let eased = step * step * (3 - 2 * step)
+            angles[subject.id] = home - 0.22 + 0.44 * eased
+            apply(volume: 0.15 + 0.85 * eased, pan: -0.8 + 1.6 * eased, to: subject)
+            await DemoDirector.pause(0.04)
+        }
+        await DemoDirector.pause(1.4)
+
+        withAnimation(Motion.spring) { dragging = nil }
+        await DemoDirector.pause(1.6)
+        resetForDemo()
+        withAnimation(Motion.spring) { angles[subject.id] = home }
+    }
+
+    private func resetForDemo() {
+        withAnimation(Motion.spring) {
+            for pad in pads {
+                pad.volume = 0.8; pad.pan = 0
+                engine.setVolume(0.8, pan: 0, for: pad.id)
+            }
+        }
+    }
+    #endif
 
     // MARK: Master + segmented
 

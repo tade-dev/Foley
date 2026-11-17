@@ -61,6 +61,15 @@ struct LibraryView: View {
                 .padding(.bottom, 40)
             }
             .scrollDismissesKeyboard(.immediately)
+            #if DEBUG
+            .task {
+                guard DemoDirector.isRunning("library") else { return }
+                await DemoDirector.pause(2)
+                withAnimation(.easeInOut(duration: 1.6)) { search = "rain" }
+                await DemoDirector.pause(2.6)
+                withAnimation(.easeInOut(duration: 1)) { search = "" }
+            }
+            #endif
         }
         .background(Theme.Colors.bg.ignoresSafeArea())
         .confirmationDialog("Delete this scene?", isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }), titleVisibility: .visible) {
