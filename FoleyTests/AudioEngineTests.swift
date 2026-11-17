@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import AVFoundation
 @testable import Foley
 
 @Suite(.serialized) @MainActor struct AudioEngineTests {
@@ -38,6 +39,37 @@ import Foundation
         #expect(e.isPlaying(ids[0]) && e.isPlaying(ids[2]))
         #expect(!e.isPlaying(ids[1]) && !e.isPlaying(ids[3]))
     }
+    @Test func recordingWithNothingPlayingIsDiscarded() async throws {
+        let (e, _) = try engine()           // loaded but never toggled
+        try e.startRecording()
+        try await Task.sleep(for: .seconds(1.2))
+        #expect(e.stopRecording() == nil, "a silent recording must not become a mix")
+        #expect(!e.isRecording)
+    }
+
+    @Test func unloadAllClearsNodesSoEnvelopesStayScoped() async throws {
+        let (e, id) = try engine()
+        e.unloadAll()
+        #expect(e.playing.isEmpty)
+        let second = UUID()
+        try e.load(padID: second, kind: .loop, url: try #require(Bundle.main.url(forResource: "heavy-rain", withExtension: "m4a")))
+        e.toggle(second)
+        try e.startRecording()
+        try await Task.sleep(for: .seconds(0.8))
+        let rec = try #require(e.stopRecording())
+        #expect(rec.envelope[id] == nil, "a previous scene's pad leaked into the envelope")
+        #expect(rec.envelope[second] != nil)
+    }
+
+    @Test func configurationChangeStopsTheGlow() async throws {
+        let (e, id) = try engine()
+        e.toggle(id)
+        #expect(e.isPlaying(id))
+        NotificationCenter.default.post(name: .AVAudioEngineConfigurationChange, object: nil)
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(e.playing.isEmpty, "pads would glow with no sound after the engine reconfigures")
+    }
+
     @Test func panIsClamped() throws {
         let (e, id) = try engine()
         e.setVolume(0.5, pan: 4, for: id)

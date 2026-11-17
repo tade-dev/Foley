@@ -16,5 +16,10 @@ test('consume stops at the limit and expires keys', async () => {
 });
 
 test('limits match the design', () => {
-  assert.deepEqual(LIMITS, { scenesPerDevice: 10, soundsPerDevice: 40, soundsGlobal: 300 });
+  assert.deepEqual(LIMITS, { scenesPerDevice: 10, soundsPerDevice: 40, scenesGlobal: 50, soundsGlobal: 300 });
+});
+
+test('a global scene ceiling exists so one rotated device id cannot drain the account', () => {
+  assert.equal(typeof LIMITS.scenesGlobal, 'number');
+  assert.ok(LIMITS.scenesGlobal > 0);
 });

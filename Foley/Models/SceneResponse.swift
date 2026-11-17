@@ -5,12 +5,16 @@ nonisolated struct SceneResponse: Codable, Sendable, Equatable {
     nonisolated struct Sound: Codable, Sendable, Equatable {
         var name: String
         var keyword: String
-        var tint: Tint
+        /// nil when the model gave no usable tint; `validated(for:)` spreads those across the palette.
+        var tint: Tint?
         var kind: PadKind
         var prompt: String
         var duration: Double?
 
-        init(name: String, keyword: String, tint: Tint, kind: PadKind, prompt: String, duration: Double?) {
+        /// Always set after `validated(for:)`; the fallback only matters for a raw decoded response.
+        var resolvedTint: Tint { tint ?? .blue }
+
+        init(name: String, keyword: String, tint: Tint?, kind: PadKind, prompt: String, duration: Double?) {
             self.name = name; self.keyword = keyword; self.tint = tint
             self.kind = kind; self.prompt = prompt; self.duration = duration
         }
@@ -24,14 +28,11 @@ nonisolated struct SceneResponse: Codable, Sendable, Equatable {
             prompt = try c.decodeIfPresent(String.self, forKey: .prompt) ?? ""
             duration = try c.decodeIfPresent(Double.self, forKey: .duration)
             let rawTint = try c.decodeIfPresent(String.self, forKey: .tint) ?? ""
-            tint = Tint(rawValue: rawTint.lowercased()) ?? Sound.unassignedTint
+            tint = Tint(rawValue: rawTint.lowercased())
             let rawKind = (try c.decodeIfPresent(String.self, forKey: .kind) ?? "loop").lowercased()
             kind = rawKind == "loop" ? .loop : .oneShot
         }
 
-        /// Marker for "the model gave no usable tint"; `validated` replaces it round-robin.
-        /// Encoded as a real tint so round-tripping stays valid.
-        static let unassignedTint: Tint = .blue
     }
 
     var title: String
@@ -69,10 +70,11 @@ nonisolated struct SceneResponse: Codable, Sendable, Equatable {
             .map { index, sound in
                 var s = sound
                 if let d = s.duration { s.duration = min(max(d, Self.durationRange.lowerBound), Self.durationRange.upperBound) }
-                if !s.keyword.isEmpty, prompt.range(of: s.keyword, options: [.caseInsensitive, .diacriticInsensitive]) == nil {
-                    s.keyword = ""
-                }
-                if !Tint.allCases.contains(s.tint) { s.tint = Tint.allCases[index % Tint.allCases.count] }
+                // Match the way KeywordMatcher searches, so a keyword it would find is never cleared here.
+                let trimmed = s.keyword.trimmingCharacters(in: .punctuationCharacters.union(.whitespacesAndNewlines))
+                s.keyword = trimmed.isEmpty || prompt.range(of: trimmed, options: [.caseInsensitive, .diacriticInsensitive]) == nil
+                    ? "" : trimmed
+                if s.tint == nil { s.tint = Tint.allCases[index % Tint.allCases.count] }
                 return s
             }
         return out

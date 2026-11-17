@@ -23,7 +23,6 @@ struct CreateView: View {
     @State private var parsedFor = ""
     @State private var isParsing = false
     @State private var parseFailed = false
-    @State private var parseTask: Task<Void, Never>?
     @State private var ambientLoops = true
     @State private var clipLength: ClipLength = .auto
     @State private var soundIDs: [Int: UUID] = [:]
@@ -55,7 +54,7 @@ struct CreateView: View {
     }
     private var matches: [KeywordMatch] {
         zip(KeywordMatcher.ranges(of: sounds.map(\.keyword), in: text), sounds.indices).compactMap { range, i in
-            range.map { KeywordMatch(id: id(for: i), range: $0, tint: sounds[i].tint) }
+            range.map { KeywordMatch(id: id(for: i), range: $0, tint: sounds[i].resolvedTint) }
         }
     }
 
@@ -79,7 +78,6 @@ struct CreateView: View {
         .task(id: text) { await parseAfterPause() }
         .onChange(of: slotFrames) { _, _ in startFlightIfReady() }
         .onChange(of: store.progress) { _, p in finishIfDone(p) }
-        .onDisappear { parseTask?.cancel() }
         .sensoryFeedback(.selection, trigger: sounds.count)
         .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: landingTick)
     }
@@ -156,7 +154,7 @@ struct CreateView: View {
             }
             FlowLayout(spacing: 10) {
                 ForEach(Array(sounds.enumerated()), id: \.offset) { i, sound in
-                    SoundChip(name: sound.name, tint: sound.tint, isNew: newestChip == id(for: i))
+                    SoundChip(name: sound.name, tint: sound.resolvedTint, isNew: newestChip == id(for: i))
                         .anchorPreference(key: FramesKey.self, value: .bounds) { [i: $0] }
                         .opacity(flight.isEmpty ? 1 : 0)
                 }
@@ -321,7 +319,6 @@ struct CreateView: View {
     // MARK: - Build + flight
 
     private func build() {
-        parseTask?.cancel()
         Task {
             let prompt = text.trimmingCharacters(in: .whitespacesAndNewlines)
             if parsedFor != prompt { await parse(prompt) }
@@ -350,6 +347,9 @@ struct CreateView: View {
             pendingScene = scene
             slotFrames = [:]
             phase = .generating(scene)
+            // The flight is decorative: generation starts either way, so a grid that never
+            // materialises its anchors (a short screen, a lazy row offscreen) cannot strand the user.
+            startGeneration(scene)
         }
     }
 
@@ -374,15 +374,13 @@ struct CreateView: View {
                 landed.insert(item.id)
                 landingTick += 1
             }
-            // Chips hover over their generating pads; the keyword gaps stay in the prompt card.
-            startGeneration(scene)
         }
     }
 
     private func startGeneration(_ scene: SoundScene) {
         guard !generationStarted else { return }
         generationStarted = true
-        if landed.isEmpty { landed = Set(scene.pads.map(\.id)) }
+        if reduceMotion || flight.isEmpty { landed = Set(scene.pads.map(\.id)) }
         Task {
             await store.generateAll(for: scene)
             finishIfDone(store.progress)

@@ -5,6 +5,7 @@ struct PadSheetView: View {
     var pad: Pad
 
     @Environment(SceneStore.self) private var store
+    @Environment(AppEnvironment.self) private var env
     @Environment(AudioEngine.self) private var engine
     @Environment(\.dismiss) private var dismiss
 
@@ -21,7 +22,10 @@ struct PadSheetView: View {
 
     private var isPlaying: Bool { engine.isPlaying(pad.id) }
     private var isFailedPad: Bool { if case .failed = store.status(of: pad) { true } else { false } }
-    private var canRegenerate: Bool { !regenerating && (draft != pad.spec || isFailedPad) && !draft.prompt.trimmingCharacters(in: .whitespaces).isEmpty }
+    private var canRegenerate: Bool {
+        !env.isDemoOnly && !regenerating && (draft != pad.spec || isFailedPad)
+            && !draft.prompt.trimmingCharacters(in: .whitespaces).isEmpty
+    }
     private var meta: String {
         let kind = draft.loop ? "Loop" : "One-shot"
         let length = draft.duration.map { String(format: "%.1fs", $0) } ?? "auto"
@@ -46,6 +50,10 @@ struct PadSheetView: View {
                             Text("More creative"); Spacer(); Text("More literal")
                         }
                         .font(.system(size: 15)).foregroundStyle(Theme.Colors.sceneSecondary)
+                    }
+                    if env.isDemoOnly {
+                        Text("Connect your proxy in Config/Local.xcconfig to regenerate this sound. The demo sounds play without it.")
+                            .font(.system(size: 15)).foregroundStyle(Theme.Colors.sceneSecondary).lineSpacing(3)
                     }
                     if failed {
                         HStack(spacing: 12) {

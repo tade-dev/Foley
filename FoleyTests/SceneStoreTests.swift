@@ -4,20 +4,46 @@ import SwiftData
 @testable import Foley
 
 @Suite(.serialized) @MainActor struct SceneStoreTests {
+    /// Counts upstream calls and the real concurrency. Every counter is behind a lock: the task
+    /// group calls this from several threads at once, and racy counters under-report.
     final class CountingService: GenerationService, @unchecked Sendable {
-        var active = 0, maxActive = 0, calls = 0
-        var failing: Set<String> = []
-        var busyOnce: Set<String> = []
+        private let lock = NSLock()
+        private var _active = 0, _maxActive = 0, _calls = 0
+        private var _failing: Set<String> = [], _busyOnce: Set<String> = []
+
+        var maxActive: Int { lock.withLock { _maxActive } }
+        var calls: Int { lock.withLock { _calls } }
+        var failing: Set<String> {
+            get { lock.withLock { _failing } }
+            set { lock.withLock { _failing = newValue } }
+        }
+        var busyOnce: Set<String> {
+            get { lock.withLock { _busyOnce } }
+            set { lock.withLock { _busyOnce = newValue } }
+        }
+
         let cache: AudioCache
         init(cache: AudioCache) { self.cache = cache }
+
         func buildScene(prompt: String) async throws -> SceneResponse { fatalError("unused") }
+
         func generateSound(_ spec: SoundSpec) async throws -> URL {
             if cache.contains(spec.cacheKey) { return cache.url(for: spec.cacheKey) }
-            calls += 1; active += 1; maxActive = max(maxActive, active)
-            defer { active -= 1 }
-            try await Task.sleep(for: .milliseconds(50))
-            if busyOnce.remove(spec.cacheKey) != nil { throw GenerationError.busy }
-            if failing.contains(spec.cacheKey) { throw GenerationError.server(500) }
+            let active = lock.withLock { () -> Int in
+                _calls += 1; _active += 1; _maxActive = max(_maxActive, _active)
+                return _active
+            }
+            defer { lock.withLock { _active -= 1 } }
+            _ = active
+            // Hold until the store has filled its concurrency window, so the assertion on
+            // maxActive measures the cap rather than the machine's scheduling luck.
+            let deadline = Date.now.addingTimeInterval(0.3)
+            while lock.withLock({ _active }) < 3, Date.now < deadline {
+                try await Task.sleep(for: .milliseconds(5))
+            }
+            try await Task.sleep(for: .milliseconds(20))
+            if lock.withLock({ _busyOnce.remove(spec.cacheKey) }) != nil { throw GenerationError.busy }
+            if lock.withLock({ _failing.contains(spec.cacheKey) }) { throw GenerationError.server(500) }
             let demo = Bundle.main.url(forResource: "thunder-crack", withExtension: "m4a")!
             return try cache.store(try Data(contentsOf: demo), key: spec.cacheKey)
         }
@@ -41,14 +67,14 @@ import SwiftData
     @Test func generatesWithConcurrencyThreeAndMarksReady() async throws {
         let (store, svc, scene, container) = try make(); defer { withExtendedLifetime(container) {} }
         await store.generateAll(for: scene)
-        #expect(svc.maxActive == 3)
+        #expect(svc.maxActive == 3, "concurrency was \(svc.maxActive), expected the store's cap of 3")
         #expect(scene.pads.allSatisfy { store.status(of: $0) == .ready })
         #expect(store.progress.done == 6 && store.progress.total == 6)
     }
     @Test func duplicateSpecsGenerateOnce() async throws {
         let (store, svc, scene, container) = try make(); defer { withExtendedLifetime(container) {} }
         await store.generateAll(for: scene)
-        #expect(svc.calls == 5)
+        #expect(svc.calls == 5, "upstream calls were \(svc.calls); statuses \(scene.orderedPads.map { store.status(of: $0) })")
     }
     @Test func failedPadRetriesInPlace() async throws {
         let (store, svc, scene, container) = try make(); defer { withExtendedLifetime(container) {} }; let pad = scene.orderedPads[2]
@@ -89,6 +115,31 @@ import SwiftData
         #expect(oneShots.allSatisfy { store.status(of: $0) == .ready }, "one-shots still playing: \(oneShots.map { store.status(of: $0) })")
         store.stopAll()
     }
+    @Test func retryDuringActiveRunStillCompletes() async throws {
+        let (store, svc, scene, container) = try make(); defer { withExtendedLifetime(container) {} }
+        let pad = scene.orderedPads[0]
+        svc.failing = [pad.spec.cacheKey]
+        let run = Task { await store.generateAll(for: scene) }
+        try await Task.sleep(for: .milliseconds(30))
+        svc.failing = []
+        await store.retry(pad)           // arrives while the first run is still in flight
+        await run.value
+        #expect(store.status(of: pad) == .ready, "retry during an active run was dropped")
+        #expect(store.progress.done == store.progress.total)
+    }
+
+    @Test func storedVolumeAndPanAreAppliedOnPrepare() async throws {
+        let (store, _, scene, container) = try make(); defer { withExtendedLifetime(container) {} }
+        await store.generateAll(for: scene)
+        let pad = scene.orderedPads[0]
+        pad.volume = 0.3
+        pad.pan = -0.7
+        store.engine.unload(padID: pad.id)
+        await store.prepare(scene)
+        #expect(abs(store.engine.volume(for: pad.id) - 0.3) < 0.01)
+        #expect(abs(store.engine.pan(for: pad.id) + 0.7) < 0.01)
+    }
+
     @Test func saveMixRejectsShortRecordings() throws {
         let (store, _, scene, container) = try make(); defer { withExtendedLifetime(container) {} }
         let rec = MixRecording(url: URL(fileURLWithPath: "/dev/null"), duration: 0.2, envelope: [:], padOrder: [])

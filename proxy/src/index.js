@@ -3,7 +3,7 @@
 //   POST /sound  → ElevenLabs sound generation, streamed back as audio/mpeg
 // Secrets: wrangler secret put OPENAI_API_KEY / ELEVENLABS_API_KEY
 import { sceneRoute } from './scene.js';
-import { soundRoute } from './sound.js';
+import { soundRoute, parseSoundRequest } from './sound.js';
 import { counterKey, consume, LIMITS } from './limits.js';
 
 const STATUS = {
@@ -28,7 +28,9 @@ export default {
 
     try {
       if (env.BURST) {
-        const { success } = await env.BURST.limit({ key: deviceId });
+        // Keyed by address as well as device id: the id is client-minted and rotatable.
+        const address = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+        const { success } = await env.BURST.limit({ key: `${address}:${deviceId}` });
         if (!success) throw new Error('rate_limited');
       }
 
@@ -37,15 +39,19 @@ export default {
       if (pathname === '/scene') {
         const prompt = String(body?.prompt || '').trim();
         if (!prompt || prompt.length > 500) throw new Error('bad_prompt');
-        await spend(env, [[counterKey('scenes', deviceId), LIMITS.scenesPerDevice]]);
+        await spend(env, [
+          [counterKey('scenes', deviceId), LIMITS.scenesPerDevice],
+          [counterKey('scenes', 'global'), LIMITS.scenesGlobal],
+        ]);
         return Response.json(await sceneRoute(prompt, env));
       }
 
+      const soundRequest = parseSoundRequest(body);
       await spend(env, [
         [counterKey('sounds', deviceId), LIMITS.soundsPerDevice],
         [counterKey('sounds', 'global'), LIMITS.soundsGlobal],
       ]);
-      return await soundRoute(body, env);
+      return await soundRoute(soundRequest, env);
     } catch (e) {
       const code = STATUS[e.message] ? e.message : 'proxy_error';
       return json(code, STATUS[code] ?? 500);
@@ -53,9 +59,13 @@ export default {
   },
 };
 
-/** Counters are spent before the upstream call: a failed upstream still counts, and that keeps this simple. */
+/**
+ * Counters are spent before the upstream call: a failed upstream still counts, which keeps this
+ * simple and errs toward protecting the account. Fails closed — a missing or misbound namespace
+ * stops traffic rather than silently removing every spending limit.
+ */
 async function spend(env, pairs) {
-  if (!env.COUNTERS) return;
+  if (!env.COUNTERS) throw new Error('quota');
   for (const [key, limit] of pairs) {
     if (!(await consume(env.COUNTERS, key, limit))) throw new Error('quota');
   }

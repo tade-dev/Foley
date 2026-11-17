@@ -25,8 +25,22 @@ import Foundation
         let r = try JSONDecoder().decode(SceneResponse.self, from: Data(json.utf8)).validated(for: "a and b")
         #expect(r.sounds[0].kind == .oneShot)
         #expect(r.sounds[1].kind == .loop)
-        #expect(Tint.allCases.contains(r.sounds[1].tint))
+        #expect(Tint.allCases.contains(r.sounds[1].resolvedTint))
     }
+    @Test func missingTintsAreSpreadAcrossThePalette() throws {
+        let json = #"{"title":"T","mood":"blue","sounds":[{"name":"A","keyword":"a","prompt":"p"},{"name":"B","keyword":"b","prompt":"p"},{"name":"C","keyword":"c","prompt":"p"}]}"#
+        let r = try JSONDecoder().decode(SceneResponse.self, from: Data(json.utf8)).validated(for: "a b c")
+        #expect(Set(r.sounds.map(\.resolvedTint)).count == 3, "a response with no tints gave every pad the same colour")
+    }
+
+    @Test func keywordWithTrailingPunctuationSurvivesValidation() throws {
+        let s = SceneResponse(title: "T", mood: .blue, sounds: [
+            .init(name: "Rain", keyword: "heavy rain,", tint: .teal, kind: .loop, prompt: "p", duration: 10)])
+        let v = s.validated(for: "A storm with heavy rain and wind")
+        #expect(v.sounds[0].keyword.isEmpty == false, "punctuation stripped the highlight the matcher would have found")
+        #expect(KeywordMatcher.ranges(of: [v.sounds[0].keyword], in: "A storm with heavy rain and wind")[0] != nil)
+    }
+
     @Test func validationClampsAndDropsBadKeywords() throws {
         let s = SceneResponse(title: "T", mood: .blue, sounds: (0..<10).map {
             .init(name: "N\($0)", keyword: $0 == 0 ? "RAIN" : "zzz", tint: .pink, kind: .loop, prompt: "p", duration: $0 == 1 ? 99 : 5) })

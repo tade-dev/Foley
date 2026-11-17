@@ -50,7 +50,7 @@ nonisolated final class MockGenerationService: GenerationService {
         }
         let titleWords = trimmed.split(separator: " ").prefix(5).joined(separator: " ")
         return SceneResponse(title: titleWords.prefix(1).uppercased() + titleWords.dropFirst(),
-                             mood: sounds.first?.tint ?? .blue,
+                             mood: sounds.first?.resolvedTint ?? .blue,
                              sounds: sounds).validated(for: trimmed)
     }
 
@@ -64,9 +64,14 @@ nonisolated final class MockGenerationService: GenerationService {
         // Match the spec's kind so a 3-second one-shot never comes back as a 15-second bed.
         let files = sounds.filter { ($0.kind == .loop) == spec.loop }.map(\.file)
         guard !files.isEmpty else { throw GenerationError.invalidResponse }
-        let pick = files[abs(spec.cacheKey.hashValue) % files.count]
+        let pick = files[stableIndex(spec.cacheKey, count: files.count)]
         guard let source = DemoSeeder.audioURL(file: pick, bundle: bundle) else { throw GenerationError.invalidResponse }
         return try cache.store(try Data(contentsOf: source), key: spec.cacheKey)
+    }
+
+    /// Deterministic across launches, unlike `hashValue`.
+    private func stableIndex(_ key: String, count: Int) -> Int {
+        Int(key.utf8.reduce(UInt64(5381)) { ($0 &* 33) &+ UInt64($1) } % UInt64(max(count, 1)))
     }
 
     private func sleep(fraction: Double) async throws {

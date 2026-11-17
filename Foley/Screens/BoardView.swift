@@ -55,6 +55,12 @@ struct BoardView: View {
         .background(SceneBackground(mood: scene.mood, active: activeTints))
         .animation(Motion.seg, value: mode)
         .animation(Motion.quick, value: toast)
+        .onDisappear {
+            // A recording must never follow the user into another scene.
+            if router.path.last.map({ if case .mixSaved = $0 { false } else { true } }) ?? true {
+                store.discardRecording()
+            }
+        }
         .task {
             guard !prepared else { return }
             prepared = true
@@ -99,7 +105,7 @@ struct BoardView: View {
     private var header: some View {
         HStack {
             CircleIconButton(symbol: "chevron.left", label: "Back", size: 52, glass: true) {
-                store.stopAll()
+                store.leave(scene)
                 router.pop()
             }
             Spacer()

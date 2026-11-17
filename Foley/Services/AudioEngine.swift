@@ -41,6 +41,9 @@ final class AudioEngine {
     @ObservationIgnored private var recordingStart: Date?
     @ObservationIgnored private var envelope: [UUID: [Float]] = [:]
     @ObservationIgnored private var lastEnvelopeSample: Date?
+    /// Set the first time any pad is actually playing during a recording. A recording that never
+    /// hears anything is silence, not a mix.
+    @ObservationIgnored private var recordedSomething = false
 
     init() {
         let session = AVAudioSession.sharedInstance()
@@ -76,6 +79,12 @@ final class AudioEngine {
         buffers[padID] = buffer
         kinds[padID] = kind
         if !engine.isRunning { try? engine.start() }
+    }
+
+    /// Drops every loaded pad. Called when leaving a scene so nodes, taps and the recording
+    /// envelope never carry another scene's pads.
+    func unloadAll() {
+        for id in players.keys { unload(padID: id) }
     }
 
     func unload(padID: UUID) {
@@ -141,6 +150,8 @@ final class AudioEngine {
 
     func pan(for padID: UUID) -> Double { pans[padID] ?? 0 }
 
+    func volume(for padID: UUID) -> Double { Double(players[padID]?.volume ?? 1) }
+
     /// 0–1 position inside the current loop, for `LoopRing`.
     func loopProgress(for padID: UUID) -> Double {
         guard let node = players[padID], let buffer = buffers[padID], buffer.frameLength > 0,
@@ -154,6 +165,9 @@ final class AudioEngine {
         for id in levels.keys { levels[id] = 0 }
         masterLevels = Array(repeating: 0, count: 40)
         meter.reset()
+        // The system deactivates the session during an interruption; without this the engine
+        // never restarts and the app is silent until relaunch.
+        try? AVAudioSession.sharedInstance().setActive(true)
         if !engine.isRunning { try? engine.start() }
     }
 
@@ -171,6 +185,7 @@ final class AudioEngine {
         ])
         envelope = Dictionary(uniqueKeysWithValues: loadOrder.map { ($0, [Float]()) })
         lastEnvelopeSample = nil
+        recordedSomething = !playing.isEmpty
         recordingStart = .now
         recordingElapsed = .zero
         meter.recordFile = file
@@ -185,7 +200,7 @@ final class AudioEngine {
         isRecording = false
         recordingStart = nil
         let duration = Date.now.timeIntervalSince(start)
-        guard let file, duration >= 0.5 else {
+        guard let file, duration >= 0.5, recordedSomething else {
             if let file { try? FileManager.default.removeItem(at: file.url) }
             return nil
         }
@@ -212,6 +227,8 @@ final class AudioEngine {
 
     private func startLevelPump() {
         let link = CADisplayLink(target: LinkTarget { [weak self] in self?.pumpLevels() }, selector: #selector(LinkTarget.tick))
+        // 60 Hz is what the glow needs; ProMotion would otherwise pump at 120.
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -223,9 +240,11 @@ final class AudioEngine {
             let target = pads[id] ?? 0
             let current = levels[id] ?? 0
             let k: Float = target > current ? 0.6 : 0.15
-            levels[id] = playing.contains(id) ? current + (target - current) * k : 0
+            let next = playing.contains(id) ? current + (target - current) * k : 0
+            if abs(next - current) > 0.001 || (next == 0 && current != 0) { levels[id] = next }
         }
-        masterLevels = playing.isEmpty ? Array(repeating: 0, count: 40) : master
+        let nextMaster = playing.isEmpty ? Array(repeating: 0, count: 40) : master
+        if nextMaster != masterLevels { masterLevels = nextMaster }
         sampleEnvelopeIfRecording()
     }
 
@@ -236,6 +255,7 @@ final class AudioEngine {
         let interval = 1 / MixRecording.envelopeRate
         if let last = lastEnvelopeSample, now.timeIntervalSince(last) < interval { return }
         lastEnvelopeSample = now
+        if !playing.isEmpty { recordedSomething = true }
         for id in loadOrder {
             envelope[id, default: []].append(playing.contains(id) ? (levels[id] ?? 0) : 0)
         }
@@ -244,6 +264,11 @@ final class AudioEngine {
     private func observeSession() {
         let center = NotificationCenter.default
         observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.handleInterruption() }
+        })
+        // Dictation flips the shared session to .playAndRecord, which reconfigures the engine and
+        // stops every node: without this, pads keep glowing with no sound.
+        observers.append(center.addObserver(forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.handleInterruption() }
         })
         observers.append(center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] note in
@@ -257,19 +282,22 @@ final class AudioEngine {
 /// Thread-safe store the audio taps write into; the display link reads it on main.
 private nonisolated final class MeterStore: @unchecked Sendable {
     private let lock = NSLock()
+    /// Separate from `lock`: encoding and writing a buffer must never block the display link's
+    /// 60 Hz `snapshot()` on the main thread.
+    private let fileLock = NSLock()
     private var pads: [UUID: Float] = [:]
     private var master: [Float] = Array(repeating: 0, count: 40)
     private var _recordFile: AVAudioFile?
 
     var recordFile: AVAudioFile? {
-        get { lock.withLock { _recordFile } }
-        set { lock.withLock { _recordFile = newValue } }
+        get { fileLock.withLock { _recordFile } }
+        set { fileLock.withLock { _recordFile = newValue } }
     }
     func setPad(_ id: UUID, _ v: Float) { lock.withLock { pads[id] = v } }
     func remove(_ id: UUID) { lock.withLock { pads[id] = nil } }
     func pushMaster(_ v: Float) { lock.withLock { master.removeFirst(); master.append(v) } }
     func reset() { lock.withLock { pads = [:]; master = Array(repeating: 0, count: 40) } }
-    func write(_ buffer: AVAudioPCMBuffer) { lock.withLock { try? _recordFile?.write(from: buffer) } }
+    func write(_ buffer: AVAudioPCMBuffer) { fileLock.withLock { try? _recordFile?.write(from: buffer) } }
     func snapshot() -> ([UUID: Float], [Float]) { lock.withLock { (pads, master) } }
 }
 

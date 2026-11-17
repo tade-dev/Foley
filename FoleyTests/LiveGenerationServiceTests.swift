@@ -39,8 +39,9 @@ import Foundation
         await #expect(throws: GenerationError.busy) { try await svc.generateSound(spec) }
         t.responses["/sound"] = (429, [:], Data(#"{"error":"quota"}"#.utf8))
         await #expect(throws: GenerationError.quota) { try await svc.generateSound(spec) }
+        // A 60-second burst is transient: it must retry, not end the session with "Daily limit reached".
         t.responses["/sound"] = (429, [:], Data(#"{"error":"rate_limited"}"#.utf8))
-        await #expect(throws: GenerationError.quota) { try await svc.generateSound(spec) }
+        await #expect(throws: GenerationError.busy) { try await svc.generateSound(spec) }
         t.responses["/sound"] = (502, [:], Data(#"{"error":"elevenlabs_error"}"#.utf8))
         await #expect(throws: GenerationError.server(502)) { try await svc.generateSound(spec) }
     }

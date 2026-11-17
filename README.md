@@ -19,6 +19,10 @@ open Foley.xcodeproj          # press Run
 No keys, no setup: the app ships with two demo scenes ("Pirate ship in a storm" and "Rainy café in Tokyo")
 that play immediately. Describing a *new* scene needs the proxy below.
 
+The bundled demo sounds are synthesised placeholders so the repo stays free to clone and run. To hear the
+real thing, run `scripts/generate_demo_audio.sh` with an ElevenLabs key: it regenerates all ten from the
+same prompts.
+
 From the command line:
 
 ```bash
@@ -97,4 +101,4 @@ flowchart LR
 | `proxy/` | The Cloudflare Worker |
 | `docs/handoff/` | The original design handoff: screens, tokens, spec |
 
-Sounds generated with ElevenLabs.
+Sounds you generate are made with ElevenLabs.

@@ -86,6 +86,8 @@ nonisolated final class LiveGenerationService: GenerationService {
             throw error
         } catch is CancellationError {
             throw CancellationError()
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()
         } catch {
             throw GenerationError.offline
         }
@@ -96,8 +98,9 @@ nonisolated final class LiveGenerationService: GenerationService {
         guard !(200..<300).contains(response.statusCode) else { return }
         let code = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
         switch code {
-        case "busy": throw GenerationError.busy
-        case "quota", "rate_limited": throw GenerationError.quota
+        // A burst limit clears in a minute, so it retries; only the daily caps end the session.
+        case "busy", "rate_limited": throw GenerationError.busy
+        case "quota": throw GenerationError.quota
         case "bad_prompt", "invalid_scene": throw GenerationError.invalidResponse
         default: throw GenerationError.server(response.statusCode)
         }

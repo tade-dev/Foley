@@ -79,21 +79,28 @@ nonisolated final class MixRenderer: Sendable {
 
         async let videoDone: Void = withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             let frame = FrameCounter()
+            // AVFoundation can call the block again after an early exit; a second resume would trap.
+            let finish = OnceBox(cont)
             let queue = DispatchQueue(label: "foley.render.video")
             box.videoInput.requestMediaDataWhenReady(on: queue) {
                 while box.videoInput.isReadyForMoreMediaData {
+                    guard !finish.isDone else { return }
                     let i = frame.value
                     if i >= frameCount {
                         box.videoInput.markAsFinished()
-                        cont.resume()
+                        finish.resume(nil)
                         return
                     }
                     guard let pool = box.adaptor.pixelBufferPool else {
-                        cont.resume(throwing: MixRenderError.writerFailed("no pixel buffer pool")); return
+                        box.videoInput.markAsFinished()
+                        finish.resume(MixRenderError.writerFailed("no pixel buffer pool")); return
                     }
                     var buffer: CVPixelBuffer?
                     CVPixelBufferPoolCreatePixelBuffer(nil, pool, &buffer)
-                    guard let buffer else { cont.resume(throwing: MixRenderError.writerFailed("pixel buffer")); return }
+                    guard let buffer else {
+                        box.videoInput.markAsFinished()
+                        finish.resume(MixRenderError.writerFailed("pixel buffer")); return
+                    }
                     box.painter.draw(frame: i, fps: fps, into: buffer)
                     box.adaptor.append(buffer, withPresentationTime: CMTime(value: CMTimeValue(i), timescale: CMTimeScale(fps)))
                     frame.value = i + 1
@@ -102,15 +109,17 @@ nonisolated final class MixRenderer: Sendable {
             }
         }
         async let audioDone: Void = withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+            let finish = OnceBox(cont)
             let queue = DispatchQueue(label: "foley.render.audio")
             box.audioInput.requestMediaDataWhenReady(on: queue) {
                 while box.audioInput.isReadyForMoreMediaData {
+                    guard !finish.isDone else { return }
                     if let sample = box.readerOutput.copyNextSampleBuffer() {
                         box.audioInput.append(sample)
                     } else {
                         box.audioInput.markAsFinished()
-                        if box.reader.status == .failed { cont.resume(throwing: box.reader.error ?? MixRenderError.writerFailed("audio read")) }
-                        else { cont.resume() }
+                        finish.resume(box.reader.status == .failed
+                                      ? (box.reader.error ?? MixRenderError.writerFailed("audio read")) : nil)
                         return
                     }
                 }
@@ -127,6 +136,24 @@ nonisolated final class MixRenderer: Sendable {
 
 private nonisolated final class FrameCounter: @unchecked Sendable {
     var value = 0
+}
+
+/// Resumes its continuation exactly once, however many times a callback fires.
+private nonisolated final class OnceBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cont: CheckedContinuation<Void, Error>?
+    init(_ cont: CheckedContinuation<Void, Error>) { self.cont = cont }
+
+    var isDone: Bool { lock.withLock { cont == nil } }
+
+    func resume(_ error: Error?) {
+        let pending = lock.withLock { () -> CheckedContinuation<Void, Error>? in
+            defer { cont = nil }
+            return cont
+        }
+        guard let pending else { return }
+        if let error { pending.resume(throwing: error) } else { pending.resume() }
+    }
 }
 
 /// AVFoundation writer objects are not Sendable; they are only touched from their own serial queues.

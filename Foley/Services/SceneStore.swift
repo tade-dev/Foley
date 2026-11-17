@@ -27,6 +27,10 @@ final class SceneStore {
     @ObservationIgnored private let context: ModelContext
     @ObservationIgnored private let busyDelays: [Duration]
     @ObservationIgnored private var activeRuns: Set<UUID> = []
+    /// Pads the current run has already tried. A Retry arriving mid-run removes its pad from here,
+    /// which is how the run picks the request up instead of dropping it — and why a pad that simply
+    /// failed is not tried again forever.
+    @ObservationIgnored private var attemptedThisRun: Set<UUID> = []
 
     init(context: ModelContext, engine: AudioEngine, cache: AudioCache, generation: GenerationService,
          proxy: ProxyConfig, busyDelays: [Duration] = [.seconds(1), .seconds(2), .seconds(4)]) {
@@ -58,7 +62,7 @@ final class SceneStore {
         let scene = SoundScene(title: response.title, sourcePrompt: sourcePrompt, mood: response.mood)
         context.insert(scene)
         for (i, s) in response.sounds.enumerated() {
-            let pad = Pad(name: s.name, keyword: s.keyword, tint: s.tint, kind: s.kind,
+            let pad = Pad(name: s.name, keyword: s.keyword, tint: s.resolvedTint, kind: s.kind,
                           spec: SoundSpec(prompt: s.prompt, duration: s.duration, loop: s.kind == .loop),
                           sortIndex: i)
             pad.scene = scene
@@ -74,7 +78,7 @@ final class SceneStore {
     func prepare(_ scene: SoundScene) async {
         var needsGeneration = false
         for pad in scene.orderedPads {
-            if let url = audioURL(for: pad), (try? engine.load(padID: pad.id, kind: pad.kind, url: url)) != nil {
+            if let url = audioURL(for: pad), (try? load(pad, from: url)) != nil {
                 statuses[pad.id] = .ready
             } else if statuses[pad.id] != .generating {
                 statuses[pad.id] = .queued
@@ -84,7 +88,22 @@ final class SceneStore {
         if needsGeneration { await generateAll(for: scene) }
     }
 
+    /// Everything that must happen when a scene's board goes away.
+    func leave(_ scene: SoundScene) {
+        discardRecording()
+        engine.stopAll()
+        engine.unloadAll()
+        for pad in scene.pads { statuses[pad.id] = nil }
+    }
+
+    /// Drops an in-flight recording without saving it.
+    func discardRecording() {
+        guard engine.isRecording, let recording = engine.stopRecording() else { return }
+        try? FileManager.default.removeItem(at: recording.url)
+    }
+
     func deleteScene(_ scene: SoundScene) {
+        discardRecording()
         engine.stopAll()
         for pad in scene.pads {
             engine.unload(padID: pad.id)
@@ -98,18 +117,36 @@ final class SceneStore {
 
     /// Generates every queued or failed pad, at most three at a time, one call per distinct spec.
     /// Safe to cancel: pads that never finish are marked failed, never left generating.
+    /// Re-reads the queue after each pass, so a Retry that lands mid-run is picked up rather than lost.
     func generateAll(for scene: SoundScene) async {
         guard !activeRuns.contains(scene.id) else { return }
         activeRuns.insert(scene.id)
-        defer { activeRuns.remove(scene.id) }
+        attemptedThisRun = []
+        defer { activeRuns.remove(scene.id); attemptedThisRun = [] }
 
-        let pads = scene.orderedPads
-        let pending = pads.filter { pad in
-            switch statuses[pad.id] ?? .queued {
-            case .queued, .failed: true
-            default: false
+        while true {
+            let pads = scene.orderedPads
+            let pending = pads.filter { pad in
+                guard !attemptedThisRun.contains(pad.id) else { return false }
+                switch statuses[pad.id] ?? .queued {
+                case .queued, .failed: return true
+                default: return false
+                }
             }
+            guard !pending.isEmpty else { break }
+            await runPass(pending, in: pads)
+            if Task.isCancelled { break }
         }
+
+        for pad in scene.orderedPads where statuses[pad.id] == .generating || statuses[pad.id] == .queued {
+            statuses[pad.id] = .failed(GenerationError.server(0).userMessage)
+        }
+        refreshProgress(scene.orderedPads)
+        try? context.save()
+    }
+
+    /// One wave: every distinct spec among `pending`, three in flight at a time.
+    private func runPass(_ pending: [Pad], in pads: [Pad]) async {
         var byKey: [String: [Pad]] = [:]
         var keys: [String] = []
         for pad in pending {
@@ -132,21 +169,20 @@ final class SceneStore {
             }
             for _ in 0..<3 { if let k = iterator.next() { start(k) } }
             for await (key, result) in group {
-                for pad in byKey[key] ?? [] { settle(pad, result) }
+                for pad in byKey[key] ?? [] {
+                    attemptedThisRun.insert(pad.id)
+                    settle(pad, result)
+                }
                 refreshProgress(pads)
                 if let k = iterator.next() { start(k) }
             }
         }
-        for pad in pending where statuses[pad.id] == .generating || statuses[pad.id] == .queued {
-            statuses[pad.id] = .failed("Cancelled")
-        }
-        refreshProgress(pads)
-        try? context.save()
     }
 
     func retry(_ pad: Pad) async {
         guard let scene = pad.scene else { return }
         statuses[pad.id] = .queued
+        attemptedThisRun.remove(pad.id)   // an active run will pick this up on its next pass
         await generateAll(for: scene)
     }
 
@@ -156,9 +192,9 @@ final class SceneStore {
         pad.spec = spec
         pad.kindRaw = (spec.loop ? PadKind.loop : .oneShot).rawValue
         pad.cacheKey = nil
-        pad.demoFile = nil
         pad.version += 1
         statuses[pad.id] = .queued
+        attemptedThisRun.remove(pad.id)
         await generateAll(for: scene)
     }
 
@@ -180,20 +216,27 @@ final class SceneStore {
         case .success(let url):
             pad.cacheKey = pad.spec.cacheKey
             do {
-                try engine.load(padID: pad.id, kind: pad.kind, url: url)
+                try load(pad, from: url)
+                pad.demoFile = nil          // the generated file has replaced the bundled one
                 statuses[pad.id] = .ready
             } catch {
                 statuses[pad.id] = .failed(GenerationError.invalidResponse.userMessage)
             }
         case .failure(let error):
             if error is CancellationError {
-                statuses[pad.id] = .failed("Cancelled")
+                statuses[pad.id] = .failed(GenerationError.server(0).userMessage)
             } else if let g = error as? GenerationError, g != .busy {
                 statuses[pad.id] = .failed(g.userMessage)
             } else {
                 statuses[pad.id] = .failed(GenerationError.server(0).userMessage)
             }
         }
+    }
+
+    /// Loads a pad's audio and restores the mix position the user left it at.
+    private func load(_ pad: Pad, from url: URL) throws {
+        try engine.load(padID: pad.id, kind: pad.kind, url: url)
+        engine.setVolume(pad.volume, pan: pad.pan, for: pad.id)
     }
 
     private func refreshProgress(_ pads: [Pad]) {
