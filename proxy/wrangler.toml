@@ -9,7 +9,7 @@ OPENAI_MODEL = "gpt-4o-mini"
 # then paste the printed id below.
 [[kv_namespaces]]
 binding = "COUNTERS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "2d4d27774aa04aa8a8e4b334be8c06d3"
 
 # Burst protection, 20 requests per 60s per device.
 [[unsafe.bindings]]
