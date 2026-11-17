@@ -13,7 +13,7 @@ final class AppEnvironment {
     let store: SceneStore
 
     /// True when no proxy URL is configured: demo scenes play, Build scene explains the setup.
-    var isDemoOnly: Bool { false }
+    let isDemoOnly: Bool
 
     init(context: ModelContext) {
         let engine = AudioEngine()
@@ -26,7 +26,18 @@ final class AppEnvironment {
             failEvery = Int(CommandLine.arguments[i + 1]) ?? 0
         }
         #endif
-        let generation = MockGenerationService(cache: cache, failEvery: failEvery)
+        var useMockOverride = false
+        #if DEBUG
+        useMockOverride = CommandLine.arguments.contains("-FoleyUseMock")
+        #endif
+        let useMock = useMockOverride || !proxy.isConfigured
+        let generation: GenerationService = if let baseURL = proxy.baseURL, !useMock {
+            LiveGenerationService(baseURL: baseURL, cache: cache)
+        } else {
+            MockGenerationService(cache: cache, failEvery: failEvery)
+        }
+        // Demo-only mode is about the proxy, not the stand-in: with -FoleyUseMock the create flow still works.
+        self.isDemoOnly = !proxy.isConfigured && !useMockOverride
         self.engine = engine
         self.cache = cache
         self.proxy = proxy

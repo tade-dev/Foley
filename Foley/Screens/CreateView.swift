@@ -95,7 +95,7 @@ struct CreateView: View {
             HStack {
                 CircleIconButton(symbol: "xmark", label: "Close", size: 52, glass: true) { router.pop() }
                 Spacer()
-                statusPill
+                if !env.isDemoOnly { statusPill }
                 Spacer()
                 Color.clear.frame(width: 52, height: 52)
             }
