@@ -1,0 +1,28 @@
+{
+  "scenes": [
+    {
+      "title": "Pirate ship in a storm",
+      "sourcePrompt": "A creaky pirate ship in a thunderstorm, heavy rain, howling wind, waves smashing the hull and a grumpy cat below deck",
+      "mood": "blue",
+      "sounds": [
+        { "name": "Creaking hull", "keyword": "creaky pirate ship", "tint": "amber", "kind": "loop", "prompt": "Old wooden ship hull creaking and groaning slowly at sea, rope straining, seamless loop", "duration": 10, "file": "creaking-hull" },
+        { "name": "Thunder crack", "keyword": "thunderstorm", "tint": "blue", "kind": "oneShot", "prompt": "Close thunder crack rolling off into the distance over the sea", "duration": 4, "file": "thunder-crack" },
+        { "name": "Heavy rain", "keyword": "heavy rain", "tint": "teal", "kind": "loop", "prompt": "Heavy rain pouring onto a wooden deck, steady downpour, seamless loop", "duration": 15, "file": "heavy-rain" },
+        { "name": "Howling wind", "keyword": "howling wind", "tint": "lavender", "kind": "loop", "prompt": "Howling storm wind whistling through rigging and sails, seamless loop", "duration": 12, "file": "howling-wind" },
+        { "name": "Waves on hull", "keyword": "waves", "tint": "sky", "kind": "loop", "prompt": "Large ocean waves crashing against a wooden ship hull in a storm, seamless loop", "duration": 15, "file": "waves-on-hull" },
+        { "name": "Grumpy cat", "keyword": "grumpy cat", "tint": "pink", "kind": "oneShot", "prompt": "A grumpy cat growling and meowing in complaint", "duration": 2, "file": "grumpy-cat" }
+      ]
+    },
+    {
+      "title": "Rainy café in Tokyo",
+      "sourcePrompt": "A rainy café in Tokyo: rain on the window, an espresso machine hissing, quiet chatter and ceramic cups",
+      "mood": "teal",
+      "sounds": [
+        { "name": "Rain on window", "keyword": "rain on the window", "tint": "teal", "kind": "loop", "prompt": "Soft rain tapping on a café window, cosy and steady, seamless loop", "duration": 12, "file": "rain-on-window" },
+        { "name": "Espresso machine", "keyword": "espresso machine", "tint": "amber", "kind": "oneShot", "prompt": "An espresso machine hissing and steaming milk, short burst", "duration": 3, "file": "espresso-machine" },
+        { "name": "Quiet chatter", "keyword": "quiet chatter", "tint": "pink", "kind": "loop", "prompt": "Quiet café chatter, soft murmuring voices and the occasional laugh, seamless loop", "duration": 15, "file": "quiet-chatter" },
+        { "name": "Ceramic cups", "keyword": "ceramic cups", "tint": "lavender", "kind": "oneShot", "prompt": "Ceramic coffee cups clinking gently on saucers", "duration": 2, "file": "ceramic-cups" }
+      ]
+    }
+  ]
+}
