@@ -14,12 +14,12 @@ struct ProxySetupCard: View {
             Text("Foley needs its Cloudflare Worker URL in Config/Local.xcconfig. The demo scenes work without it.")
                 .font(.system(size: 15)).foregroundStyle(Theme.Colors.textSecondary).lineSpacing(3)
             HStack(spacing: 12) {
-                Link(destination: URL(string: "https://github.com/akintadeseun/Foley#generate-your-own-scenes")!) {
-                    Text("How to set it up").font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Theme.Colors.bg)
-                        .padding(.horizontal, 16).frame(height: 40)
-                        .background(Theme.Colors.textPrimary, in: .capsule)
-                }
+                Text("See proxy/README.md")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.Colors.bg)
+                    .padding(.horizontal, 16).frame(height: 40)
+                    .background(Theme.Colors.textPrimary, in: .capsule)
+                    .accessibilityLabel("Setup instructions are in proxy slash README dot md")
                 Button("Open a demo scene", action: onOpenDemo)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.Colors.textPrimary)
