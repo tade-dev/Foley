@@ -7,6 +7,9 @@ struct InteractiveOrb: View {
     var size: CGFloat
     /// 0–1, how "awake" the orb looks; the composer raises it as the prompt grows.
     var excitement: Double = 0
+    /// How far from centre it may be pulled. Kept small enough that the orb and its glow stay
+    /// inside the canvas, which clips, and the canvas stays inside the screen.
+    var travel: Double = 54
     var onPluck: (Double) -> Void = { _ in }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -21,12 +24,16 @@ struct InteractiveOrb: View {
         TimelineView(.animation(minimumInterval: 1 / 60, paused: reduceMotion)) { context in
             Canvas { canvas, canvasSize in
                 let centre = CGPoint(x: canvasSize.width / 2, y: canvasSize.height / 2)
-                draw(in: &canvas, centre: centre)
+                draw(in: &canvas, centre: centre, bounds: canvasSize)
             }
             .onChange(of: context.date) { _, now in advance(to: now) }
         }
-        .frame(width: size * 2.8, height: size * 2.8)
+        // Width follows the parent: a fixed width wider than the phone would push the whole
+        // screen's content out past both edges.
+        .frame(maxWidth: .infinity)
+        .frame(height: size * 1.75)
         .contentShape(Circle())
+        .onAppear { physics.maxOffset = travel }
         .gesture(drag)
         .sensoryFeedback(.impact(weight: .light), trigger: landed)
         .accessibilityLabel("Sound orb")
@@ -36,8 +43,13 @@ struct InteractiveOrb: View {
 
     // MARK: Drawing
 
-    private func draw(in canvas: inout GraphicsContext, centre: CGPoint) {
+    private func draw(in canvas: inout GraphicsContext, centre: CGPoint, bounds: CGSize) {
         let origin = CGPoint(x: centre.x + physics.position.x, y: centre.y + physics.position.y)
+        // The canvas clips, so keep every glow inside it: a gradient cut before it reaches
+        // transparent leaves a hard edge, which is what draws the eye to a rectangle.
+        let room = min(min(bounds.width, bounds.height) / 2 - 1,
+                       min(bounds.width / 2 - abs(physics.position.x),
+                           bounds.height / 2 - abs(physics.position.y)))
 
         // Trail and halo are radial gradients that reach full transparency at their own edge.
         // A blurred shape would be cut off square at the canvas bounds and show its frame.
@@ -57,7 +69,7 @@ struct InteractiveOrb: View {
         }
 
         // A halo that swells with speed, so a hard throw looks like it carries energy.
-        let halo = radius * (1.5 + 0.7 * physics.stretch)
+        let halo = min(radius * (1.5 + 0.7 * physics.stretch), max(radius * 1.05, room))
         canvas.drawLayer { layer in
             layer.blendMode = .plusLighter
             layer.fill(Circle().path(in: CGRect(x: origin.x - halo, y: origin.y - halo,

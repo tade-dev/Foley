@@ -72,7 +72,8 @@ struct HomeView: View {
                     .strokeBorder(Theme.Colors.border.opacity(0.6), lineWidth: 1)
                     .frame(width: 176, height: 176)
                 InteractiveOrb(tint: .blue, size: 154,
-                               excitement: min(1, Double(text.count) / 40)) { speed in
+                               excitement: min(1, Double(text.count) / 40),
+                               travel: 54) { speed in
                     engine.pluck(speed: speed)
                 }
                 .saturation(0.25 + 0.75 * min(1, Double(text.count) / 40))
