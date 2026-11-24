@@ -21,15 +21,22 @@ struct InteractiveOrb: View {
     @State private var trail: [CGPoint] = []
     @State private var lastTick = Date.now
     @State private var landed = 0
+    @State private var breathing = false
 
     private var radius: CGFloat { size / 2 }
 
+    /// True only while something is actually moving. When it is false the timeline pauses and
+    /// the view stops redrawing entirely: an orb sitting still should cost nothing.
+    private var isMoving: Bool {
+        physics.isDragging || physics.speed > 1 || physics.position != .zero
+    }
+
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 60, paused: reduceMotion)) { context in
+        TimelineView(.animation(minimumInterval: 1 / 60, paused: !isMoving || reduceMotion)) { context in
             ZStack {
                 wake
                 halo
-                body(for: context.date)
+                orb
                 glint
             }
             .onChange(of: context.date) { _, now in advance(to: now) }
@@ -45,17 +52,22 @@ struct InteractiveOrb: View {
     }
 
     // MARK: Layers
+    //
+    // Every layer is a fixed-size circle with a fixed gradient, moved and scaled with transforms.
+    // Changing a gradient's size or stops forces Core Graphics to rasterise it again on the CPU
+    // every frame, which is enough to starve the main thread and make the whole screen feel stuck.
 
     /// The light the orb leaves behind. Added rather than painted, so it reads as glow.
     private var wake: some View {
         ZStack {
             ForEach(Array(trail.enumerated()), id: \.offset) { index, point in
                 let age = Double(index) / Double(max(trail.count - 1, 1))
-                let r = radius * (0.5 + 0.5 * age)
                 Circle()
-                    .fill(RadialGradient(colors: [tint.base.opacity(0.18 * age * age), .clear],
-                                         center: .center, startRadius: 0, endRadius: r))
-                    .frame(width: r * 2, height: r * 2)
+                    .fill(RadialGradient(colors: [tint.base, .clear], center: .center,
+                                         startRadius: 0, endRadius: radius))
+                    .frame(width: size, height: size)
+                    .scaleEffect(0.5 + 0.5 * age)
+                    .opacity(0.18 * age * age)
                     .offset(x: point.x, y: point.y)
             }
         }
@@ -65,24 +77,22 @@ struct InteractiveOrb: View {
 
     /// Swells with speed, so a hard throw looks like it carries energy.
     private var halo: some View {
-        let reach = radius * (1.5 + 0.7 * physics.stretch)
-        return Circle()
+        Circle()
             .fill(RadialGradient(
-                stops: [
-                    .init(color: tint.base.opacity(0.22 + 0.3 * physics.stretch + 0.1 * excitement), location: 0.35),
-                    .init(color: .clear, location: 1),
-                ],
-                center: .center, startRadius: 0, endRadius: reach))
-            .frame(width: reach * 2, height: reach * 2)
+                stops: [.init(color: tint.base, location: 0.35), .init(color: .clear, location: 1)],
+                center: .center, startRadius: 0, endRadius: radius * 1.5))
+            .frame(width: size * 1.5, height: size * 1.5)
+            .scaleEffect(1 + 0.45 * physics.stretch)
+            .opacity(0.22 + 0.3 * physics.stretch + 0.1 * excitement)
             .offset(x: physics.position.x, y: physics.position.y)
             .blendMode(.plusLighter)
             .allowsHitTesting(false)
     }
 
-    private func body(for date: Date) -> some View {
-        OrbBlob(stretch: reduceMotion ? 0 : physics.stretch,
-                heading: physics.heading,
-                breath: reduceMotion ? 1 : 1 + 0.02 * sin(date.timeIntervalSinceReferenceDate * 1.6))
+    /// The body. Stretching is a scale along the direction of travel, not a new path: same look,
+    /// none of the per-frame rasterising.
+    private var orb: some View {
+        Circle()
             .fill(RadialGradient(
                 stops: [
                     .init(color: tint.highlight, location: 0),
@@ -91,16 +101,29 @@ struct InteractiveOrb: View {
                 ],
                 center: UnitPoint(x: 0.36, y: 0.34), startRadius: 0, endRadius: radius * 1.25))
             .frame(width: size, height: size)
+            // Stretch along the direction of travel: rotate the travel axis onto x, scale, then
+            // rotate back. The two rotations cancel for the gradient, so the highlight stays put
+            // instead of spinning with the throw.
+            .rotationEffect(.radians(-physics.heading))
+            .scaleEffect(x: 1 + physics.stretch * 0.8, y: 1 - physics.stretch * 0.3, anchor: .center)
+            .rotationEffect(.radians(physics.heading))
+            .scaleEffect(breathing ? 1.02 : 0.98)
             .offset(x: physics.position.x, y: physics.position.y)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                    breathing = true
+                }
+            }
     }
 
     /// A specular dot that slides opposite the stretch, like light on a wet surface.
     private var glint: some View {
         let r = radius * 0.16
         return Circle()
-            .fill(RadialGradient(colors: [.white.opacity(0.5 + 0.3 * excitement), .clear],
-                                 center: .center, startRadius: 0, endRadius: r))
+            .fill(RadialGradient(colors: [.white, .clear], center: .center, startRadius: 0, endRadius: r))
             .frame(width: r * 2, height: r * 2)
+            .opacity(0.5 + 0.3 * excitement)
             .offset(x: physics.position.x - radius * 0.3 - cos(physics.heading) * radius * 0.12,
                     y: physics.position.y - radius * 0.34 - sin(physics.heading) * radius * 0.12)
             .blendMode(.plusLighter)
@@ -136,35 +159,15 @@ struct InteractiveOrb: View {
         if !physics.isDragging { pushTrail() }
     }
 
+    /// Only records a wake while there is movement worth tracing, and clears it once, not every
+    /// frame: appending and emptying on every tick kept the view invalidating forever.
     private func pushTrail() {
         guard !reduceMotion else { return }
-        trail.append(physics.position)
-        if trail.count > 10 { trail.removeFirst(trail.count - 10) }
-        if physics.speed < 40, physics.position == .zero { trail.removeAll() }
-    }
-}
-
-/// A circle stretched into an egg along `heading`, by `stretch`.
-private nonisolated struct OrbBlob: Shape {
-    var stretch: Double
-    var heading: Double
-    var breath: Double
-
-    func path(in rect: CGRect) -> Path {
-        let centre = CGPoint(x: rect.midX, y: rect.midY)
-        let base = min(rect.width, rect.height) / 2
-        var path = Path()
-        let steps = 72
-        for i in 0...steps {
-            let angle = Double(i) / Double(steps) * 2 * .pi
-            // Longer along the direction of travel, narrower across it.
-            let along = cos(angle - heading)
-            let lobe = along > 0 ? 1.0 : 0.55
-            let r = base * breath * (1 + stretch * along * along * lobe - stretch * 0.35)
-            let point = CGPoint(x: centre.x + cos(angle) * r, y: centre.y + sin(angle) * r)
-            if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
+        guard physics.isDragging || physics.speed > 60 else {
+            if !trail.isEmpty { trail.removeAll() }
+            return
         }
-        path.closeSubpath()
-        return path
+        trail.append(physics.position)
+        if trail.count > 8 { trail.removeFirst(trail.count - 8) }
     }
 }
