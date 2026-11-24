@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// The scene field pinned to the bottom of Home: text, dictate, send.
+/// The scene field pinned to the bottom of Home.
+///
+/// Two shapes, like the input in a chat app: a slim capsule at rest, and when you focus it the
+/// text takes its own line and the controls drop below, so long prompts have room to breathe.
 struct Composer: View {
     @Binding var text: String
     var isListening = false
@@ -8,39 +11,71 @@ struct Composer: View {
     var onSubmit: () -> Void
 
     @FocusState private var focused: Bool
+
     private var isEmpty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var isExpanded: Bool { focused || !isEmpty }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SectionLabel("Your scene")
-            HStack(alignment: .bottom, spacing: 8) {
-                TextField("A pirate ship in a thunderstorm…", text: $text, axis: .vertical)
-                    .lineLimit(1...4)
-                    .font(Theme.Fonts.bodyLarge)
-                    .foregroundStyle(Theme.Colors.textPrimary)
-                    .tint(Theme.Colors.textPrimary)
-                    .focused($focused)
-                    .submitLabel(.go)
-                    .onSubmit { if !isEmpty { onSubmit() } }
-                    .padding(.vertical, 10)
-                CircleIconButton(symbol: isListening ? "waveform" : "mic", label: isListening ? "Stop dictation" : "Dictate",
-                                 fill: isListening ? Theme.Colors.record.opacity(0.25) : Theme.Colors.surfaceRaised,
-                                 tint: isListening ? Theme.Colors.record : Theme.Colors.textPrimary,
-                                 action: onDictate)
-                    .symbolEffect(.variableColor.iterative, isActive: isListening)
-                CircleIconButton(symbol: "arrow.up", label: "Build scene",
-                                 fill: isEmpty ? Theme.Colors.border : Theme.Colors.textPrimary,
-                                 tint: isEmpty ? Theme.Colors.disabledIcon : Theme.Colors.bg,
-                                 action: onSubmit)
-                    .disabled(isEmpty)
-                    .animation(Motion.quick, value: isEmpty)
+        VStack(alignment: .leading, spacing: 12) {
+            if isExpanded {
+                field
+                HStack(spacing: 10) {
+                    micButton
+                    Spacer(minLength: 0)
+                    sendButton
+                }
+                .transition(.opacity)
+            } else {
+                HStack(spacing: 10) {
+                    field
+                    micButton
+                    sendButton
+                }
             }
-            .padding(.leading, 16).padding(8)
-            .background(Theme.Colors.surface, in: .rect(cornerRadius: Theme.Radius.input))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.input)
-                .strokeBorder(focused ? Theme.Colors.textTertiary : Theme.Colors.border))
-            .animation(Motion.quick, value: focused)
         }
+        .padding(.horizontal, isExpanded ? 18 : 8)
+        .padding(.vertical, isExpanded ? 16 : 8)
+        .background {
+            let shape = RoundedRectangle(cornerRadius: isExpanded ? 30 : 34, style: .continuous)
+            shape.fill(Theme.Colors.surface.opacity(0.55))
+                .foleyGlass(shape)
+                .overlay(shape.strokeBorder(Theme.Colors.border.opacity(0.9)))
+        }
+        .animation(Motion.seg, value: isExpanded)
+    }
+
+    private var field: some View {
+        TextField("A pirate ship in a thunderstorm…", text: $text, axis: .vertical)
+            .lineLimit(isExpanded ? 1...6 : 1...1)
+            .font(Theme.Fonts.bodyLarge)
+            .foregroundStyle(Theme.Colors.textPrimary)
+            .tint(Theme.Colors.textPrimary)
+            .focused($focused)
+            .submitLabel(.go)
+            .onSubmit { if !isEmpty { onSubmit() } }
+            .padding(.leading, isExpanded ? 2 : 12)
+            .padding(.vertical, isExpanded ? 2 : 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var micButton: some View {
+        CircleIconButton(symbol: isListening ? "waveform" : "mic",
+                         label: isListening ? "Stop dictation" : "Dictate",
+                         fill: isListening ? Theme.Colors.record.opacity(0.25) : Theme.Colors.surfaceRaised,
+                         tint: isListening ? Theme.Colors.record : Theme.Colors.textSecondary,
+                         size: 42,
+                         action: onDictate)
+            .symbolEffect(.variableColor.iterative, isActive: isListening)
+    }
+
+    private var sendButton: some View {
+        CircleIconButton(symbol: "arrow.up", label: "Build scene",
+                         fill: isEmpty ? Theme.Colors.surfaceRaised : Theme.Colors.textPrimary,
+                         tint: isEmpty ? Theme.Colors.disabledIcon : Theme.Colors.bg,
+                         size: 46,
+                         action: onSubmit)
+            .disabled(isEmpty)
+            .animation(Motion.quick, value: isEmpty)
     }
 }
 

@@ -13,7 +13,9 @@ nonisolated struct OrbPhysics {
     var stiffness: Double = 120
     var damping: Double = 7.5
     /// How far past the ring the orb may travel before the spring hauls it back.
-    var maxOffset: Double = 120
+    var maxOffset: Double = 92
+    /// The furthest a drag may stretch it past `maxOffset`, so it can never run off the screen.
+    var rubberBandCeiling: Double = 1.45
 
     var speed: Double { (velocity.dx * velocity.dx + velocity.dy * velocity.dy).squareRoot() }
 
@@ -32,8 +34,9 @@ nonisolated struct OrbPhysics {
     mutating func drag(to point: CGPoint) {
         let distance = (point.x * point.x + point.y * point.y).squareRoot()
         if distance > maxOffset {
-            // Beyond the ring it rubber-bands, so the orb never flies off the screen.
-            let pull = maxOffset + (distance - maxOffset) * 0.35
+            // Beyond the ring it rubber-bands, and never past the ceiling however far you pull.
+            let eased = maxOffset + (distance - maxOffset) * 0.35
+            let pull = min(eased, maxOffset * rubberBandCeiling)
             position = CGPoint(x: point.x / distance * pull, y: point.y / distance * pull)
         } else {
             position = point

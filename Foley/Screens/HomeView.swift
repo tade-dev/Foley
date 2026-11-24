@@ -18,27 +18,29 @@ struct HomeView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            // The hero sits outside the scroll view: a scroll view clips its contents, and the
+            // orb is meant to be thrown past its own bounds.
+            hero
+                .padding(.top, 28)
+                .padding(.horizontal, Theme.Space.l)
+
             ScrollView {
-                VStack(spacing: 0) {
-                    hero
-                        .padding(.top, 36)
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionLabel("Try one")
-                        FlowLayout(spacing: 10) {
-                            ForEach(suggestions, id: \.0) { title, tint in
-                                SuggestionChip(title: title, tint: tint) { type(title) }
-                            }
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionLabel("Try one")
+                    FlowLayout(spacing: 10) {
+                        ForEach(suggestions, id: \.0) { title, tint in
+                            SuggestionChip(title: title, tint: tint) { type(title) }
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 40)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 28)
                 .padding(.horizontal, Theme.Space.l)
             }
             .scrollDismissesKeyboard(.interactively)
             Composer(text: $text, isListening: dictation.isListening, onDictate: toggleDictation, onSubmit: submit)
-                .padding(.horizontal, Theme.Space.l)
-                .padding(.bottom, Theme.Space.s)
+                .padding(.horizontal, Theme.Space.m)
+                .padding(.bottom, Theme.Space.xs)
         }
         .background(Theme.Colors.bg.ignoresSafeArea())
         .sensoryFeedback(.selection, trigger: typedWords)
@@ -73,7 +75,7 @@ struct HomeView: View {
                     .frame(width: 176, height: 176)
                 InteractiveOrb(tint: .blue, size: 154,
                                excitement: min(1, Double(text.count) / 40),
-                               travel: 54) { speed in
+                               travel: 92) { speed in
                     engine.pluck(speed: speed)
                 }
                 .saturation(0.25 + 0.75 * min(1, Double(text.count) / 40))
@@ -90,6 +92,7 @@ struct HomeView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
     }
