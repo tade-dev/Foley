@@ -49,15 +49,12 @@ final class AudioEngine {
     @ObservationIgnored private var recordedSomething = false
 
     init() {
-        let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.playback, mode: .default)
-        try? session.setActive(true)
         installMasterTap()
         engine.prepare()
-        try? engine.start()
         engine.mainMixerNode.outputVolume = Float(masterVolume)
         startLevelPump()
         observeSession()
+        Task { await activateSession() }
     }
 
     // MARK: Loading
@@ -81,7 +78,7 @@ final class AudioEngine {
         }
         buffers[padID] = buffer
         kinds[padID] = kind
-        if !engine.isRunning { try? engine.start() }
+        startEngineIfNeeded()
     }
 
     /// Drops every loaded pad. Called when leaving a scene so nodes, taps and the recording
@@ -112,7 +109,7 @@ final class AudioEngine {
     /// Loop: start/stop. One-shot: trigger from the start.
     func toggle(_ padID: UUID) {
         guard let node = players[padID], let buffer = buffers[padID] else { return }
-        if !engine.isRunning { try? engine.start() }
+        startEngineIfNeeded()
 
         switch kinds[padID] ?? .loop {
         case .loop:
@@ -168,10 +165,32 @@ final class AudioEngine {
         for id in levels.keys { levels[id] = 0 }
         masterLevels = Array(repeating: 0, count: 40)
         meter.reset()
-        // The system deactivates the session during an interruption; without this the engine
-        // never restarts and the app is silent until relaunch.
-        try? AVAudioSession.sharedInstance().setActive(true)
-        if !engine.isRunning { try? engine.start() }
+        // The system deactivates the session during an interruption; without reactivating it the
+        // engine never restarts and the app is silent until relaunch.
+        Task { await activateSession() }
+    }
+
+    /// Configuring the audio session blocks while it negotiates with the audio server, so it
+    /// never runs on the main thread: Xcode flags that as a hang risk, and it is one.
+    private func activateSession() async {
+        await Self.configureSession(category: .playback, mode: .default, options: [])
+        startEngineIfNeeded()
+    }
+
+    private nonisolated static func configureSession(category: AVAudioSession.Category,
+                                                     mode: AVAudioSession.Mode,
+                                                     options: AVAudioSession.CategoryOptions) async {
+        await Task.detached(priority: .userInitiated) {
+            let session = AVAudioSession.sharedInstance()
+            try? session.setCategory(category, mode: mode, options: options)
+            try? session.setActive(true)
+        }.value
+    }
+
+    /// Everything that makes sound calls this first: the session may still have been activating.
+    private func startEngineIfNeeded() {
+        guard !engine.isRunning else { return }
+        try? engine.start()
     }
 
     // MARK: The home-screen orb's voice
@@ -198,7 +217,7 @@ final class AudioEngine {
             engine.connect(voiceNode, to: engine.mainMixerNode, format: format)
             voiceAttached = true
         }
-        if !engine.isRunning { try? engine.start() }
+        startEngineIfNeeded()
         voiceNode.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
         voiceNode.play()
     }
@@ -207,6 +226,7 @@ final class AudioEngine {
 
     func startRecording() throws {
         guard !isRecording else { return }
+        startEngineIfNeeded()
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("foley-mix-\(UUID().uuidString).m4a")
         let format = engine.mainMixerNode.outputFormat(forBus: 0)
         let file = try AVAudioFile(forWriting: url, settings: [

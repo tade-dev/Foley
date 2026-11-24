@@ -27,9 +27,10 @@ final class Dictation {
             return
         }
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetoothHFP])
-            try session.setActive(true)
+            // Off the main thread: configuring the session blocks, and blocking here would
+            // freeze the UI for as long as the audio server takes to answer.
+            await Self.configureSession(.playAndRecord, mode: .measurement,
+                                        options: [.defaultToSpeaker, .allowBluetoothHFP])
             let engine = AVAudioEngine()
             let request = SFSpeechAudioBufferRecognitionRequest()
             request.shouldReportPartialResults = true
@@ -66,7 +67,16 @@ final class Dictation {
         task?.cancel()
         engine = nil; request = nil; task = nil
         isListening = false
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
+        Task { await Self.configureSession(.playback, mode: .default, options: []) }
+    }
+
+    private nonisolated static func configureSession(_ category: AVAudioSession.Category,
+                                                     mode: AVAudioSession.Mode,
+                                                     options: AVAudioSession.CategoryOptions) async {
+        await Task.detached(priority: .userInitiated) {
+            let session = AVAudioSession.sharedInstance()
+            try? session.setCategory(category, mode: mode, options: options)
+            try? session.setActive(true)
+        }.value
     }
 }
