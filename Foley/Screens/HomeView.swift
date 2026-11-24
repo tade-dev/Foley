@@ -3,6 +3,7 @@ import SwiftUI
 /// Screen 01: wordmark, idle orb, "Describe a scene.", suggestion chips, composer.
 struct HomeView: View {
     @Environment(Router.self) private var router
+    @Environment(AudioEngine.self) private var engine
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var text = ""
     @State private var typingTask: Task<Void, Never>?
@@ -70,10 +71,13 @@ struct HomeView: View {
                 Circle()
                     .strokeBorder(Theme.Colors.border.opacity(0.6), lineWidth: 1)
                     .frame(width: 176, height: 176)
-                SoundOrb(tint: .blue, size: 154, mode: .idle)
-                    .saturation(0.05 + 0.95 * min(1, Double(text.count) / 40))
-                    .brightness(text.isEmpty ? -0.15 : 0)
-                    .animation(Motion.spring, value: text.count)
+                InteractiveOrb(tint: .blue, size: 154,
+                               excitement: min(1, Double(text.count) / 40)) { speed in
+                    engine.pluck(speed: speed)
+                }
+                .saturation(0.25 + 0.75 * min(1, Double(text.count) / 40))
+                .brightness(text.isEmpty ? -0.1 : 0)
+                .animation(Motion.spring, value: text.count)
             }
             .padding(.bottom, 10)
             Text("Describe a scene.")

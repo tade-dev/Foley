@@ -36,6 +36,9 @@ final class AudioEngine {
     @ObservationIgnored private var displayLink: CADisplayLink?
     @ObservationIgnored private let meter = MeterStore()
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
+    /// Its own node so plucking the home-screen orb never interrupts a pad.
+    @ObservationIgnored private lazy var voiceNode = AVAudioPlayerNode()
+    @ObservationIgnored private var voiceAttached = false
 
     // Recording state (main actor only).
     @ObservationIgnored private var recordingStart: Date?
@@ -169,6 +172,35 @@ final class AudioEngine {
         // never restarts and the app is silent until relaunch.
         try? AVAudioSession.sharedInstance().setActive(true)
         if !engine.isRunning { try? engine.start() }
+    }
+
+    // MARK: The home-screen orb's voice
+
+    /// Plays a short plucked note. Pitch and loudness come from how hard the orb was thrown.
+    func pluck(speed: Double) {
+        let frequency = OrbPhysics.note(forSpeed: speed)
+        let amplitude = 0.25 + 0.75 * min(1, speed / 2200)
+        play(OrbVoice.pluck(frequency: frequency, amplitude: amplitude, sampleRate: 44100))
+    }
+
+    private func play(_ samples: [Float]) {
+        let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 2)
+        guard let format,
+              let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(samples.count)),
+              let channels = buffer.floatChannelData else { return }
+        buffer.frameLength = AVAudioFrameCount(samples.count)
+        for channel in 0..<Int(format.channelCount) {
+            samples.withUnsafeBufferPointer { channels[channel].update(from: $0.baseAddress!, count: samples.count) }
+        }
+
+        if !voiceAttached {
+            engine.attach(voiceNode)
+            engine.connect(voiceNode, to: engine.mainMixerNode, format: format)
+            voiceAttached = true
+        }
+        if !engine.isRunning { try? engine.start() }
+        voiceNode.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
+        voiceNode.play()
     }
 
     // MARK: Recording (.m4a)
