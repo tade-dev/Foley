@@ -22,9 +22,9 @@ struct HomeView: View {
             // The hero sits outside the scroll view: a scroll view clips its contents, and the
             // orb is meant to be thrown past its own bounds.
             hero
-                .padding(.top, composerFocused ? 4 : 28)
+                .padding(.top, composerFocused ? 10 : 28)
                 .padding(.horizontal, Theme.Space.l)
-                .animation(Motion.seg, value: composerFocused)
+                .animation(.spring(response: 0.45, dampingFraction: 0.82), value: composerFocused)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
@@ -38,6 +38,8 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 28)
                 .padding(.horizontal, Theme.Space.l)
+                // Empty space around the chips puts the keyboard away; the chips themselves still work.
+                .background(Color.clear.contentShape(Rectangle()).onTapGesture { composerFocused = false })
             }
             .scrollDismissesKeyboard(.interactively)
             Composer(text: $text, focused: $composerFocused, isListening: dictation.isListening,
@@ -45,7 +47,12 @@ struct HomeView: View {
                 .padding(.horizontal, Theme.Space.m)
                 .padding(.bottom, Theme.Space.xs)
         }
-        .background(Theme.Colors.bg.ignoresSafeArea())
+        .background(
+            Theme.Colors.bg
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { composerFocused = false }
+        )
         .sensoryFeedback(.selection, trigger: typedWords)
         .onChange(of: dictation.transcript) { _, new in if dictation.isListening { text = new } }
         .onDisappear { dictation.stop() }
@@ -66,40 +73,66 @@ struct HomeView: View {
         .padding(.top, Theme.Space.xs)
     }
 
+    /// At rest the orb sits inside its rings above the title. While you type it flies up and
+    /// shrinks into a badge beside a smaller title, which frees the room the keyboard needs.
+    ///
+    /// `AnyLayout` re-places the same two views rather than swapping branches, so the orb keeps
+    /// its identity and its physics, and SwiftUI interpolates the move for free.
     private var hero: some View {
-        VStack(spacing: 18) {
-            ZStack {
-                Circle()
-                    .strokeBorder(Theme.Colors.border, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
-                    .frame(width: 228, height: 228)
-                    .modifier(SlowSpin(enabled: !reduceMotion))
-                Circle()
-                    .strokeBorder(Theme.Colors.border.opacity(0.6), lineWidth: 1)
-                    .frame(width: 176, height: 176)
-                InteractiveOrb(tint: .blue, size: 154,
-                               excitement: min(1, Double(text.count) / 40),
-                               travel: 92) { speed in
-                    engine.pluck(speed: speed)
-                }
-                .saturation(0.25 + 0.75 * min(1, Double(text.count) / 40))
-                .brightness(text.isEmpty ? -0.1 : 0)
-                .animation(Motion.spring, value: text.count)
+        VStack(spacing: composerFocused ? 0 : 18) {
+            let layout = composerFocused
+                ? AnyLayout(HStackLayout(alignment: .center, spacing: 14))
+                : AnyLayout(VStackLayout(spacing: 18))
+
+            layout {
+                orbCluster
+                Text("Describe a scene.")
+                    .font(.system(size: composerFocused ? 22 : 34, weight: .semibold))
+                    .tracking(composerFocused ? -0.4 : -1)
+                    .foregroundStyle(Theme.Colors.textPrimary)
+                    .fixedSize()
+                if composerFocused { Spacer(minLength: 0) }
             }
-            .frame(height: composerFocused ? 0 : nil)
-            .opacity(composerFocused ? 0 : 1)
-            .padding(.bottom, composerFocused ? 0 : 10)
-            Text("Describe a scene.")
-                .font(Theme.Fonts.hero)
-                .tracking(-1)
-                .foregroundStyle(Theme.Colors.textPrimary)
+
             Text("Foley turns it into sounds you can tap,\nlayer and loop.")
                 .font(.system(size: 17))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(height: composerFocused ? 0 : nil)
+                .opacity(composerFocused ? 0 : 1)
+                .clipped()
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: composerFocused ? .leading : .center)
+        .contentShape(Rectangle())
+        .onTapGesture { composerFocused = false }
+    }
+
+    /// The orb and its orbit rings. Both shrink together; the rings fade out on the way.
+    private var orbCluster: some View {
+        let side: CGFloat = composerFocused ? 46 : 240
+        return ZStack {
+            Circle()
+                .strokeBorder(Theme.Colors.border, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
+                .frame(width: 228, height: 228)
+                .modifier(SlowSpin(enabled: !reduceMotion && !composerFocused))
+                .opacity(composerFocused ? 0 : 1)
+            Circle()
+                .strokeBorder(Theme.Colors.border.opacity(0.6), lineWidth: 1)
+                .frame(width: 176, height: 176)
+                .opacity(composerFocused ? 0 : 1)
+            InteractiveOrb(tint: .blue,
+                           size: composerFocused ? 42 : 154,
+                           excitement: min(1, Double(text.count) / 40),
+                           travel: composerFocused ? 0 : 92) { speed in
+                engine.pluck(speed: speed)
+            }
+            .saturation(0.25 + 0.75 * min(1, Double(text.count) / 40))
+            .brightness(text.isEmpty ? -0.1 : 0)
+            .animation(Motion.spring, value: text.count)
+        }
+        .frame(width: side, height: side)
     }
 
     // MARK: Actions
