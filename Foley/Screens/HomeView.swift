@@ -24,7 +24,6 @@ struct HomeView: View {
             hero
                 .padding(.top, composerFocused ? 10 : 28)
                 .padding(.horizontal, Theme.Space.l)
-                .animation(.spring(response: 0.45, dampingFraction: 0.82), value: composerFocused)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
@@ -47,6 +46,7 @@ struct HomeView: View {
                 .padding(.horizontal, Theme.Space.m)
                 .padding(.bottom, Theme.Space.xs)
         }
+        .animation(Motion.keyboard, value: composerFocused)
         .background(
             Theme.Colors.bg
                 .ignoresSafeArea()

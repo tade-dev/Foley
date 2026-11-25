@@ -10,6 +10,9 @@ enum Motion {
     static let seg = Animation.spring(response: 0.35, dampingFraction: 0.8)
     /// Following live audio levels.
     static let level = Animation.interactiveSpring(response: 0.12, dampingFraction: 0.8)
+    /// Everything that moves when the keyboard does. Close to the system's own keyboard curve,
+    /// so the hero, the list and the field travel together instead of in two stages.
+    static let keyboard = Animation.spring(response: 0.34, dampingFraction: 0.9)
     /// Stagger between neighbouring items in a flight or pop.
     static let stagger: Double = 0.08
 }

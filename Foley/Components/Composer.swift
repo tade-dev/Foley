@@ -33,7 +33,7 @@ struct Composer: View {
                 .overlay(shape.strokeBorder(Theme.Colors.border.opacity(0.9)))
                 .allowsHitTesting(false)      // decoration only; never swallow a tap meant for the field
         }
-        .animation(Motion.seg, value: isExpanded)
+        .animation(Motion.keyboard, value: isExpanded)
     }
 
     private var field: some View {
