@@ -83,6 +83,12 @@ flowchart LR
 
 - Dark only, six fixed sound tints, every value from `Foley/Design/Theme.swift` — no hex in any view.
 - One hero moment (the word-to-pad flight) and one living system (level-driven glow); everything else is calm.
+- The orb on the home screen is a toy: drag it and it stretches along its travel with a glowing wake,
+  let go and a damped spring pulls it home, ringing a plucked note pitched by how hard you threw it.
+  Notes come from a pentatonic scale, so however you play with it, it never sounds wrong.
+- Start typing and the hero folds: the orb flies up and shrinks into a badge beside a smaller title,
+  which frees the room the keyboard needs. Everything that moves with the keyboard shares one spring,
+  so nothing arrives ahead of anything else.
 - Liquid Glass on the floating chrome: transport dock, header buttons, pills, segmented controls.
 - Reduce Motion replaces morphing, spinning and flight with fades. Every pad is a labelled button with an
   Edit action; orbit nodes expose volume and pan as adjustable values.
@@ -95,8 +101,8 @@ flowchart LR
 | --- | --- |
 | `Foley/Design` | Tokens, motion vocabulary, glass helper |
 | `Foley/Models` | SwiftData models, sound spec and cache key, proxy contracts |
-| `Foley/Services` | Audio engine, cache, generation services, scene store, mix renderer, dictation |
-| `Foley/Components` | Orb, pad, meters, chips, composer, dock, waveform, orbit node |
+| `Foley/Services` | Audio engine, cache, generation services, scene store, mix renderer, dictation, orb voice |
+| `Foley/Components` | Orb and its physics, pad, meters, chips, composer, dock, waveform, orbit node |
 | `Foley/Screens` | The nine screens |
 | `proxy/` | The Cloudflare Worker |
 | `docs/handoff/` | The original design handoff: screens, tokens, spec |
