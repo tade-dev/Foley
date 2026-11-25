@@ -9,6 +9,7 @@ struct HomeView: View {
     @State private var typingTask: Task<Void, Never>?
     @State private var typedWords = 0
     @State private var dictation = Dictation()
+    @FocusState private var composerFocused: Bool
 
     private let suggestions: [(String, Tint)] = [
         ("Rainy café in Tokyo", .teal), ("Haunted house", .lavender),
@@ -21,8 +22,9 @@ struct HomeView: View {
             // The hero sits outside the scroll view: a scroll view clips its contents, and the
             // orb is meant to be thrown past its own bounds.
             hero
-                .padding(.top, 28)
+                .padding(.top, composerFocused ? 4 : 28)
                 .padding(.horizontal, Theme.Space.l)
+                .animation(Motion.seg, value: composerFocused)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
@@ -38,7 +40,8 @@ struct HomeView: View {
                 .padding(.horizontal, Theme.Space.l)
             }
             .scrollDismissesKeyboard(.interactively)
-            Composer(text: $text, isListening: dictation.isListening, onDictate: toggleDictation, onSubmit: submit)
+            Composer(text: $text, focused: $composerFocused, isListening: dictation.isListening,
+                     onDictate: toggleDictation, onSubmit: submit)
                 .padding(.horizontal, Theme.Space.m)
                 .padding(.bottom, Theme.Space.xs)
         }
@@ -82,7 +85,9 @@ struct HomeView: View {
                 .brightness(text.isEmpty ? -0.1 : 0)
                 .animation(Motion.spring, value: text.count)
             }
-            .padding(.bottom, 10)
+            .frame(height: composerFocused ? 0 : nil)
+            .opacity(composerFocused ? 0 : 1)
+            .padding(.bottom, composerFocused ? 0 : 10)
             Text("Describe a scene.")
                 .font(Theme.Fonts.hero)
                 .tracking(-1)

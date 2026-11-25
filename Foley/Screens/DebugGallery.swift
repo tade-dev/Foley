@@ -6,6 +6,7 @@ struct DebugGallery: View {
     @State private var level = 0.6
     @State private var mode = TransportDock.Mode.grid
     @State private var text = ""
+    @FocusState private var galleryFocus: Bool
     @State private var gapped: Set<UUID> = []
     private let controls = CommandLine.arguments.contains("-gallery-controls")
     private let prompt = "A creaky pirate ship in a thunderstorm, heavy rain, howling wind, waves smashing the hull and a grumpy cat below deck"
@@ -35,7 +36,7 @@ struct DebugGallery: View {
             SectionLabel("Chips")
             HStack { SoundChip(name: "Thunder crack", tint: .blue); SoundChip(name: "Grumpy cat", tint: .pink, isNew: true); SoundChip(name: "Extra", tint: .sky, isDimmed: true) }
             HStack { SuggestionChip(title: "Rainy café in Tokyo", tint: .teal) {}; SuggestionChip(title: "Haunted house", tint: .lavender) {} }
-            Composer(text: $text, onDictate: {}, onSubmit: {})
+            Composer(text: $text, focused: $galleryFocus, onDictate: {}, onSubmit: {})
             PrimaryButton(title: "Build scene", symbol: "sparkles") {}
             PrimaryButton(title: "Build scene", symbol: "sparkles", isEnabled: false) {}
             HStack { RecPill(elapsed: .seconds(12)); CircleIconButton(symbol: "chevron.left", label: "Back", glass: true) {}; CircleIconButton(symbol: "ellipsis", label: "More", glass: true) {} }

@@ -6,32 +6,23 @@ import SwiftUI
 /// text takes its own line and the controls drop below, so long prompts have room to breathe.
 struct Composer: View {
     @Binding var text: String
+    /// Owned by the screen, so it can make room when the keyboard arrives.
+    @FocusState.Binding var focused: Bool
     var isListening = false
     var onDictate: () -> Void
     var onSubmit: () -> Void
-
-    @FocusState private var focused: Bool
 
     private var isEmpty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     private var isExpanded: Bool { focused || !isEmpty }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if isExpanded {
-                field
-                HStack(spacing: 10) {
-                    micButton
-                    Spacer(minLength: 0)
-                    sendButton
-                }
-                .transition(.opacity)
-            } else {
-                HStack(spacing: 10) {
-                    field
-                    micButton
-                    sendButton
-                }
-            }
+        // One container, three children, always the same three. Swapping between `if` branches
+        // would build a second text field and destroy the first, so focus died the instant a tap
+        // granted it: the keyboard opened and shut again and the field looked dead.
+        ComposerLayout(expanded: isExpanded) {
+            field
+            micButton
+            sendButton
         }
         .padding(.horizontal, isExpanded ? 18 : 8)
         .padding(.vertical, isExpanded ? 16 : 8)
@@ -40,6 +31,7 @@ struct Composer: View {
             shape.fill(Theme.Colors.surface.opacity(0.55))
                 .foleyGlass(shape)
                 .overlay(shape.strokeBorder(Theme.Colors.border.opacity(0.9)))
+                .allowsHitTesting(false)      // decoration only; never swallow a tap meant for the field
         }
         .animation(Motion.seg, value: isExpanded)
     }
@@ -56,6 +48,8 @@ struct Composer: View {
             .padding(.leading, isExpanded ? 2 : 12)
             .padding(.vertical, isExpanded ? 2 : 10)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .onTapGesture { focused = true }
     }
 
     private var micButton: some View {
@@ -106,5 +100,60 @@ struct CircleIconButton: View {
         }
         .buttonStyle(PressScaleStyle(scale: 0.92))
         .accessibilityLabel(label)
+    }
+}
+
+
+/// Lays the composer out as one row when collapsed and two when expanded.
+///
+/// This exists so the shape can change without the views changing: a `Layout` re-places the
+/// same subviews, where an `if`/`else` would create new ones and drop the text field's focus.
+private struct ComposerLayout: Layout {
+    var expanded: Bool
+    var spacing: CGFloat = 10
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 0
+        let (field, mic, send) = (subviews[0], subviews[1], subviews[2])
+        let micSize = mic.sizeThatFits(.unspecified)
+        let sendSize = send.sizeThatFits(.unspecified)
+
+        if expanded {
+            let fieldSize = field.sizeThatFits(ProposedViewSize(width: width, height: nil))
+            return CGSize(width: width,
+                          height: fieldSize.height + spacing + max(micSize.height, sendSize.height))
+        }
+        let room = max(0, width - micSize.width - sendSize.width - spacing * 2)
+        let fieldSize = field.sizeThatFits(ProposedViewSize(width: room, height: nil))
+        return CGSize(width: width,
+                      height: max(fieldSize.height, max(micSize.height, sendSize.height)))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let (field, mic, send) = (subviews[0], subviews[1], subviews[2])
+        let micSize = mic.sizeThatFits(.unspecified)
+        let sendSize = send.sizeThatFits(.unspecified)
+
+        if expanded {
+            let fieldSize = field.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil))
+            field.place(at: CGPoint(x: bounds.minX, y: bounds.minY),
+                        proposal: ProposedViewSize(width: bounds.width, height: fieldSize.height))
+            let controlsY = bounds.minY + fieldSize.height + spacing
+            mic.place(at: CGPoint(x: bounds.minX, y: controlsY), proposal: .unspecified)
+            send.place(at: CGPoint(x: bounds.maxX - sendSize.width, y: controlsY), proposal: .unspecified)
+            return
+        }
+
+        let room = max(0, bounds.width - micSize.width - sendSize.width - spacing * 2)
+        let fieldSize = field.sizeThatFits(ProposedViewSize(width: room, height: nil))
+        let rowHeight = max(fieldSize.height, max(micSize.height, sendSize.height))
+        func centred(_ height: CGFloat) -> CGFloat { bounds.minY + (rowHeight - height) / 2 }
+
+        field.place(at: CGPoint(x: bounds.minX, y: centred(fieldSize.height)),
+                    proposal: ProposedViewSize(width: room, height: fieldSize.height))
+        mic.place(at: CGPoint(x: bounds.minX + room + spacing, y: centred(micSize.height)),
+                  proposal: .unspecified)
+        send.place(at: CGPoint(x: bounds.maxX - sendSize.width, y: centred(sendSize.height)),
+                   proposal: .unspecified)
     }
 }
